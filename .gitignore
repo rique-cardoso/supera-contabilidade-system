@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+
+# Django
+db.sqlite3
+
+# Static build (se usar collectstatic no futuro)
+staticfiles/
+
+# Environment variables
+.env
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
