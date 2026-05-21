@@ -1,0 +1,30 @@
+@charset "UTF-8";
+
+body{
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 500px 2fr;
+}
+
+header{
+    background-image: url('../img/background-login.png');
+    background-size: cover;
+
+    display: grid;
+    grid-template-rows: 1fr 30px;
+}
+
+header > div{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+header p{
+    color: var(--contour-form);
+}
+
+header, main{
+    height: 100%;
+}
