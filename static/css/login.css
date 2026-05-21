@@ -1,30 +1,118 @@
 @charset "UTF-8";
-
-body{
+body {
     height: 100vh;
     display: grid;
     grid-template-columns: 500px 2fr;
 }
 
-header{
+header {
     background-image: url('../img/background-login.png');
     background-size: cover;
-
     display: grid;
     grid-template-rows: 1fr 30px;
 }
 
-header > div{
+header>div {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-header p{
+header p {
     color: var(--contour-form);
 }
 
-header, main{
+header,
+main {
     height: 100%;
+}
+
+main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container_form{
+    width: 600px;
+    border: 1px solid red;
+}
+
+.container_form h1{
+    color: var(--light-font);
+    text-align: center;
+    margin: 20px auto;
+}
+
+.container_form label{
+    color: var(--light-font);
+}
+
+/* Estiliza ambos os campos através da classe genérica */
+
+.input-login {
+    width: 100%;
+    height: 45px;
+    border: 1px solid var(--contour-form);
+    padding: 0 15px;
+    border-radius: 10px;
+}
+
+.campo_form{
+    margin-bottom: 10px;
+}
+
+.container_form p{
+    color: var(--secondary);
+    margin-bottom: 3em;
+}
+
+/* Estilização específica se precisar diferenciar */
+
+.input-email {
+    /* Algum comportamento exclusivo do email */
+}
+
+.input-senha {
+    /* Algum comportamento exclusivo da senha */
+}
+
+
+/* Estilização do botão de entrar */
+
+main form button[type="submit"] {
+    background-color: var(--secondary);
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+main form button[type="submit"]:hover {
+    background-color: #1a446c;
+    /* Um tom ligeiramente mais claro que o --main */
+}
+
+
+/* Estilização dos textos de erro */
+
+.erro {
+    color: var(--st-vencido);
+    font-size: 13px;
+    margin-top: 5px;
+    display: block;
+}
+
+.erros-gerais {
+    background-color: var(--st-vencido-background);
+    color: var(--st-vencido);
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 4px solid var(--st-vencido);
+    font-size: 14px;
 }

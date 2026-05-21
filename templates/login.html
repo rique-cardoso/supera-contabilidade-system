@@ -1,22 +1,44 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Supera Contabilidade</title>
-    <link rel="stylesheet" href="{% static '../static/css/global.css' %}">
-    <link rel="stylesheet" href="{% static '../static/css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
 </head>
+
 <body>
     <header>
-        <div><img src="../static/img/logo-login.png" alt="Logo Supera Contabilidade"></div>
+        <div><img src="{% static 'img/logo-login.png' %}" alt="Logo Supera Contabilidade"></div>
         <div>
             <p>Desenvolvido por Henrique Cardoso © 2026</p>
         </div>
     </header>
     <main>
-        <h1>Bem vindo(a)!</h1>
+        <div class="container_form">
+            <h1>Bem vindo(a)!</h1>
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %} {% if form.non_field_errors %}
+                <div class="erros-gerais">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+                <div class="campo-form">
+                    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label> {{ form.username }} {% if form.username.errors %}
+                    <span class="erro">{{ form.username.errors }}</span> {% endif %}
+                </div>
+                <div class="campo_form">
+                    <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label> {{ form.password }} {% if form.password.errors %}
+                    <span class="erro">{{ form.password.errors }}</span> {% endif %}
+                </div>
+                <p>Esqueci minha senha</p>
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
     </main>
 </body>
+
 </html>
