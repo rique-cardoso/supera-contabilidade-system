@@ -124,3 +124,12 @@ STATICFILES_DIRS = [
 ]
 
 AUTH_USER_MODEL = 'core.Usuario'
+
+# Nome da rota (name='login') para qual o usuário será enviado se tentar acessar uma página restrita
+LOGIN_URL = 'login'
+
+# Rota para onde o usuário vai automaticamente após acertar a senha
+LOGIN_REDIRECT_URL = 'home'
+
+# Rota para onde o usuário vai após clicar em "Sair/Logout"
+LOGOUT_REDIRECT_URL = 'login'
