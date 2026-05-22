@@ -6,7 +6,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  transition: background-color .5s, color .5s;
   font-family: 'Inter', sans-serif;
 }
 
@@ -25,4 +24,17 @@
     --st-vencendo-background: #CEB13C26;
     --st-vencido-background: #C2313426;
     --st-concluido-background: #35B74426;
+}
+
+body{
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+header.cabecalho_principal, main.conteudo_principal{
+  background-color: var(--area-background);
+  border-radius: 20px;
 }
