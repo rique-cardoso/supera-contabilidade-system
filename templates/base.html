@@ -6,12 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Base | Teste{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <script src="https://kit.fontawesome.com/bf92c72d09.js" crossorigin="anonymous"></script>
 </head>
-<body>
+<body style="padding: 20px">
     <header class="cabecalho_principal">
-        <div class="container_logo"><img src="{% static 'img/logo-header.png' %}" alt=""></div>
-        <div></div>
-        <div></div>
+        <div class="container_logo"><img src="{% static 'img/logo-header.png' %}" alt="Logo Supera Contabilidade"></div>
+        <nav>
+            <div class="nav_menu">
+                <h2>Menu</h2>
+                <a href="#"><i class="fa-brands fa-trello"></i>Processos</a>
+            </div>
+            <div class="nav_geral">
+                <h2>Geral</h2>
+                <form action="{% url 'logout' %}" method="post" class="form-logout">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-logout">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>Sair
+                    </button>
+                </form>
+            </div>
+        </nav>
+        <div><p>Desenvolvido por Henrique Cardoso © 2026</p></div>
     </header>
     <main class="conteudo_principal">
         {% block content %}{% endblock %}
