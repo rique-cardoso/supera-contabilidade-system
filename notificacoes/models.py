@@ -3,6 +3,12 @@ from processos.models import Processo
 # Create your models here.
 
 class Notificacao(models.Model):
+    CATEGORIA_CHOICES = (
+        ('ALERTA CRÍTICO', 'Alerta Crítico'),
+        ('ALERTA', 'Alerta'),
+        ('ATENÇÃO', 'Atenção'),
+        ('AGENDAMENTO', 'Agendamento'),
+    )
     processo = models.ForeignKey(
         Processo,
         on_delete=models.CASCADE,
@@ -10,7 +16,7 @@ class Notificacao(models.Model):
     )
     titulo = models.CharField(max_length=255)
     mensagem = models.TextField()
-    categoria = models.CharField(max_length=100)
+    categoria = models.CharField(max_length=100, choices=CATEGORIA_CHOICES)
     data_geracao = models.DateTimeField(auto_now_add=True)
     is_enviada_email = models.BooleanField(default=False)
     is_lida = models.BooleanField(default=False)
