@@ -207,10 +207,11 @@ class Processo(models.Model):
     def pode_editar(self):
         """Verifica se processo pode ser editado (RF23)"""
         return self.status != 'EXCLUIDO'
-    
-# Continuar com a FaseProcesso e revisar Processo e suas funções
-    
+        
 class FaseProcesso(models.Model):
+    """
+    Model de Fase - organiza checklist por fase (RF16, RF19, RF20)
+    """
     processo = models.ForeignKey(
         Processo,
         on_delete=models.CASCADE,
@@ -218,18 +219,32 @@ class FaseProcesso(models.Model):
     )
 
     nome = models.CharField(max_length=255)
-    is_geral = models.BooleanField(default=False)
-    ordem = models.IntegerField(default=0)
+    is_geral = models.BooleanField(default=False) # True = documentação geral
+    ordem = models.IntegerField(default=0) # RF16: ordenação visual
 
     class Meta:
         verbose_name = "Fase do Processo"
         verbose_name_plural = "Fases dos Processos"
-        ordering = ['ordem']
+        ordering = ['processo', 'ordem']
+        unique_together = [['processo', 'nome']]
     
     def __str__(self):
         return f"{self.processo.protocolo} - {self.nome}"
     
+    def esta_concluida(self):
+        """Verifica se todos os itens estão concluídos"""
+
+        itens = self.itens.all()
+
+        if not itens.exists():
+            return False
+        
+        return all(item.is_concluido for item in itens)
+    
 class ItemChecklist(models.Model):
+    """
+    Model de Item do Checklist - item dentro de uma fase (RF16, RF18, RF23)
+    """
     fase = models.ForeignKey(
         FaseProcesso,
         on_delete=models.CASCADE,
@@ -239,31 +254,88 @@ class ItemChecklist(models.Model):
     nome = models.CharField(max_length=255)
     is_concluido = models.BooleanField(default=False)
 
+    #RF23: rastreamento de conclusão
+
+    data_conclusao = models.DateTimeField(null=True, blank=True)
+
+    # Auditoria
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         verbose_name = "Item do Checklist"
         verbose_name_plural = "Itens do Checklist"
+        ordering = ['fase', 'data_criacao']
     
     def __str__(self):
-        return self.nome
+        return f"{self.fase.nome} - {self.nome}"
+    
+    def save(self, *args, **kwargs):
+        """
+        RF23: Rastrear quando item foi concluído
+        """
+
+        if self.is_concluido and not self.data_conclusao:
+            self.data_conclusao = timezone.now()
+        elif not self.is_concluido:
+            self.data_conclusao = None
+        super().save(*args, **kwargs)
 
 class Anexo(models.Model):
+    """
+    Model de Anexo - arquivos em itens de checklist (RF22)
+    """
+    EXTENSOES_PERMITIDAS = ['png', 'jpg', 'jpeg', 'pdf']
+
     item_checklist = models.ForeignKey(
         ItemChecklist,
         on_delete=models.CASCADE,
         related_name='anexos'
     )
 
-    arquivo = models.FileField(upload_to='anexos/')
+    arquivo = models.FileField(upload_to='anexos/%Y/%m/')
+    nome_original = models.CharField(max_length=255, blank=True)
     data_upload = models.DateTimeField(auto_now_add=True)
+
+    # Validação de tipo
+    tipo_arquivo = models.CharField(max_length=10, blank=True)
 
     class Meta:
         verbose_name = "Anexo"
         verbose_name_plural = "Anexos"
+        ordering = ['-data_upload']
     
     def __str__(self):
         return f"Anexo - {self.item_checklist.nome}"
     
+    def save(self, *args, **kwargs):
+        """
+        RF22: Validar formato de arquivo
+        """
+
+        if self.arquivo:
+            # Extrair extensão
+            extensao = self.arquivo.name.split('.')[-1].lower()
+            if extensao not in self.EXTENSOES_PERMITIDAS:
+                raise ValueError(
+                    f"Formato '{extensao}' não permitido. "
+                    f"Use: {', '.join(self.EXTENSOES_PERMITIDAS)}"
+                )
+            self.tipo_arquivo = extensao
+            self.nome_original = self.arquivo.name
+
+        super().save(*args, **kwargs)
+    
 class Vistoria(models.Model):
+    """
+    Model de Vistoria - agendamentos de vistorias (RF13, RF27)
+    """
+    STATUS_CHOICES = (
+        ('AGENDADA', 'Agendada'),
+        ('REALIZADA', 'Realizada'),
+        ('CANCELADA', 'Cancelada'),
+        ('ADIADA', 'Adiada'),
+    )
+
     processo = models.ForeignKey(
         Processo,
         on_delete=models.CASCADE,
@@ -272,7 +344,13 @@ class Vistoria(models.Model):
 
     data_hora = models.DateTimeField()
     local = models.CharField(max_length=255)
-    status = models.CharField(max_length=50)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='AGENDADA'
+    )
+    observacoes = models.TextField(blank=True, null=True)
+    data_criacao = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Vistoria"
@@ -280,9 +358,12 @@ class Vistoria(models.Model):
         ordering = ['-data_hora']
     
     def __str__(self):
-        return f"Vistoria - {self.processo.protocolo}"
+        return f"Vistoria - {self.processo.protocolo} ({self.data_hora.strftime('%d/%m/%Y %H:%M')})"
     
 class Taxa(models.Model):
+    """
+    Model de Taxa - taxas associadas ao processo (RF13)
+    """
     processo = models.ForeignKey(
         Processo,
         on_delete=models.CASCADE,
@@ -290,12 +371,18 @@ class Taxa(models.Model):
     )
 
     nome = models.CharField(max_length=255)
+    valor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     is_paga = models.BooleanField(default=False)
     is_isento = models.BooleanField(default=False)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_pagamento = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Taxa"
         verbose_name_plural = "Taxas"
+        ordering = ['-data_criacao']
+
+        # continuar da tabela Taxas
     
     def __str__(self):
         return f"{self.nome} - {self.processo.protocolo}"
