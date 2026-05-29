@@ -2,19 +2,37 @@ from django.contrib import admin
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from core.forms import CustomLoginForm
-from core.views import gerenciamento_processos, base
+from core.views import (
+    gerenciamento_processos,
+    criar_processo,
+    editar_processo,
+    deletar_processo,
+    atualizar_status_processo,
+    base
+)
 
 urlpatterns = [
     # Rota admin
     path('admin/', admin.site.urls),
+
     # Rota raiz (home)
     path('', gerenciamento_processos, name='gerenciamento_processos'),
+
+    # Rotas de processos
+    path('processos/criar/', criar_processo, name='criar_processo'),
+    path('processos/<int:processo_id>/editar/', editar_processo, name='editar_processo'),
+    path('processos/<int:processo_id>/deletar/', deletar_processo, name='deletar_processo'),
+
+    # API para drag-and-drop
+    path('api/processos/<int:processo_id>/status/', atualizar_status_processo, name='atualizar_status_processo'),
+
     # Rotas de autenticação
     path('login/', auth_views.LoginView.as_view(
         template_name='login.html',
         authentication_form=CustomLoginForm # Adicione esta linha
     ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    # renderizar template Base para testes e desenvolvimento
+
+    # Rota para testes
     path('base/', base, name='base'),
 ]
