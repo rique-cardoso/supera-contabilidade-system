@@ -8,313 +8,60 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-processos">
+<div class="kanban-wrapper">
     
-    <!-- HEADER COM FILTROS -->
-    <div class="header-processos">
-        <div class="search-bar">
-            <input 
-                type="text" 
-                id="searchInput" 
-                placeholder="🔍 Buscar processos..."
-                class="input-search"
-            >
-            <button class="btn-filtros-avancados" title="Mais filtros">
-                <i class="fa-solid fa-sliders"></i>
-            </button>
-        </div>
-
-        <div class="filtros-orgao">
-            <button 
-                class="btn-orgao btn-orgao-ativo" 
-                data-orgao="PREFEITURA"
-            >
-                <i class="fa-solid fa-building"></i> Prefeituras
-            </button>
-            <button 
-                class="btn-orgao" 
-                data-orgao="BOMBEIROS"
-            >
-                <i class="fa-solid fa-fire"></i> Bombeiros
-            </button>
-        </div>
-    </div>
-
-    <!-- CONTAINER KANBAN -->
-    <div class="kanban-container">
-        
-        <!-- COLUNA: EXCLUÍDOS -->
-        <div class="kanban-coluna excluido-coluna">
-            <div class="kanban-header excluido-header">
-                <div class="header-titulo">
-                    <span class="badge badge-excluido">
-                        <i class="fa-solid fa-ban"></i> Excluídos
-                    </span>
-                    <span class="contador">{{ processos_excluidos|length }}</span>
-                </div>
-                <div class="header-acoes">
-                    <button class="btn-adicionar-coluna" data-status="EXCLUIDO" title="Adicionar processo">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <button class="btn-menu-coluna" title="Mais opções">
-                        <i class="fa-solid fa-ellipsis-h"></i>
-                    </button>
-                </div>
+    <div class="kanban-board">
+        <div class="kanban-column">
+            <div class="column-header" style="background-color: var(--light-font2); color: #fff;">
+                <h3>Excluídos</h3>
             </div>
-
-            <div class="kanban-cards excluido-cards" data-status="EXCLUIDO">
-                {% for processo in processos_excluidos %}
-                    {% include 'partials/card_processo.html' with processo=processo %}
-                {% endfor %}
-            </div>
-
-            <div class="kanban-footer">
-                <button class="btn-novo-processo" data-status="EXCLUIDO">
-                    <i class="fa-solid fa-plus"></i> Adicionar Processo
-                </button>
+            <div class="cards-container" style="background-color: var(--area-background);">
+                <div class="kanban-card" draggable="true">Card Exemplo 1</div>
+                <div class="kanban-card" draggable="true">Card Exemplo 2</div>
+                <div class="kanban-card" draggable="true">Card Exemplo 3</div>
+                <div class="kanban-card" draggable="true">Card Exemplo 4</div>
+                <div class="kanban-card" draggable="true">Card Exemplo 5</div>
             </div>
         </div>
 
-        <!-- COLUNA: ATIVOS -->
-        <div class="kanban-coluna ativo-coluna">
-            <div class="kanban-header ativo-header">
-                <div class="header-titulo">
-                    <span class="badge badge-ativo">
-                        <i class="fa-solid fa-circle-check"></i> Ativos
-                    </span>
-                    <span class="contador">{{ processos_ativos|length }}</span>
-                </div>
-                <div class="header-acoes">
-                    <button class="btn-adicionar-coluna" data-status="ATIVO" title="Adicionar processo">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <button class="btn-menu-coluna" title="Mais opções">
-                        <i class="fa-solid fa-ellipsis-h"></i>
-                    </button>
-                </div>
+        <div class="kanban-column">
+            <div class="column-header" style="background-color: var(--st-ativo); color: #fff;">
+                <h3>Ativos</h3>
             </div>
-
-            <div class="kanban-cards ativo-cards" data-status="ATIVO">
-                {% for processo in processos_ativos %}
-                    {% include 'partials/card_processo.html' with processo=processo %}
-                {% endfor %}
-            </div>
-
-            <div class="kanban-footer">
-                <button class="btn-novo-processo" data-status="ATIVO">
-                    <i class="fa-solid fa-plus"></i> Adicionar Processo
-                </button>
+            <div class="cards-container" style="background-color: var(--st-ativo-background);">
+                <div class="kanban-card" draggable="true">Card Exemplo 6</div>
+                <div class="kanban-card" draggable="true">Card Exemplo 7</div>
             </div>
         </div>
 
-        <!-- COLUNA: VENCENDO -->
-        <div class="kanban-coluna vencendo-coluna">
-            <div class="kanban-header vencendo-header">
-                <div class="header-titulo">
-                    <span class="badge badge-vencendo">
-                        <i class="fa-solid fa-clock"></i> Vencendo
-                    </span>
-                    <span class="contador">{{ processos_vencendo|length }}</span>
-                </div>
-                <div class="header-acoes">
-                    <button class="btn-adicionar-coluna" data-status="VENCENDO" title="Adicionar processo">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <button class="btn-menu-coluna" title="Mais opções">
-                        <i class="fa-solid fa-ellipsis-h"></i>
-                    </button>
-                </div>
+        <div class="kanban-column">
+            <div class="column-header" style="background-color: var(--st-vencendo); color: #fff;">
+                <h3>Vencendo</h3>
             </div>
-
-            <div class="kanban-cards vencendo-cards" data-status="VENCENDO">
-                {% for processo in processos_vencendo %}
-                    {% include 'partials/card_processo.html' with processo=processo %}
-                {% endfor %}
-            </div>
-
-            <div class="kanban-footer">
-                <button class="btn-novo-processo" data-status="VENCENDO">
-                    <i class="fa-solid fa-plus"></i> Adicionar Processo
-                </button>
+            <div class="cards-container" style="background-color: var(--st-vencendo-background);">
+                <div class="kanban-card" draggable="true">Card Exemplo 8</div>
             </div>
         </div>
 
-        <!-- COLUNA: VENCIDOS -->
-        <div class="kanban-coluna vencido-coluna">
-            <div class="kanban-header vencido-header">
-                <div class="header-titulo">
-                    <span class="badge badge-vencido">
-                        <i class="fa-solid fa-exclamation"></i> Vencidos
-                    </span>
-                    <span class="contador">{{ processos_vencidos|length }}</span>
+        <div class="kanban-column">
+            <div class="column-header" style="background-color: var(--st-vencido); color: #fff;">
+                <h3>Vencidos</h3>
+            </div>
+            <div class="cards-container" style="background-color: var(--st-vencido-background);">
                 </div>
-                <div class="header-acoes">
-                    <button class="btn-adicionar-coluna" data-status="VENCIDO" title="Adicionar processo">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <button class="btn-menu-coluna" title="Mais opções">
-                        <i class="fa-solid fa-ellipsis-h"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="kanban-cards vencido-cards" data-status="VENCIDO">
-                {% for processo in processos_vencidos %}
-                    {% include 'partials/card_processo.html' with processo=processo %}
-                {% endfor %}
-            </div>
-
-            <div class="kanban-footer">
-                <button class="btn-novo-processo" data-status="VENCIDO">
-                    <i class="fa-solid fa-plus"></i> Adicionar Processo
-                </button>
-            </div>
         </div>
 
-        <!-- COLUNA: CONCLUÍDOS -->
-        <div class="kanban-coluna concluido-coluna">
-            <div class="kanban-header concluido-header">
-                <div class="header-titulo">
-                    <span class="badge badge-concluido">
-                        <i class="fa-solid fa-check-double"></i> Concluídos
-                    </span>
-                    <span class="contador">{{ processos_concluidos|length }}</span>
+        <div class="kanban-column">
+            <div class="column-header" style="background-color: var(--st-concluido); color: #fff;">
+                <h3>Concluídos</h3>
+            </div>
+            <div class="cards-container" style="background-color: var(--st-concluido-background);">
                 </div>
-                <div class="header-acoes">
-                    <button class="btn-adicionar-coluna" data-status="CONCLUIDO" title="Adicionar processo">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <button class="btn-menu-coluna" title="Mais opções">
-                        <i class="fa-solid fa-ellipsis-h"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="kanban-cards concluido-cards" data-status="CONCLUIDO">
-                {% for processo in processos_concluidos %}
-                    {% include 'partials/card_processo.html' with processo=processo %}
-                {% endfor %}
-            </div>
-
-            <div class="kanban-footer">
-                <button class="btn-novo-processo" data-status="CONCLUIDO">
-                    <i class="fa-solid fa-plus"></i> Adicionar Processo
-                </button>
-            </div>
         </div>
-
-    </div>
-</div>
-
-<!-- MODAL DE CRIAÇÃO/EDIÇÃO -->
-<div id="modalProcesso" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modalTitulo">Novo Processo</h2>
-            <button class="btn-fechar-modal" onclick="fecharModal()">&times;</button>
-        </div>
-        
-        <form id="formProcesso" method="POST" action="{% url 'criar_processo' %}">
-            {% csrf_token %}
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="protocolo">Protocolo *</label>
-                    <input 
-                        type="text" 
-                        id="protocolo" 
-                        name="protocolo" 
-                        required
-                        placeholder="Ex: PREF-2026-001"
-                    >
-                </div>
-                
-                <div class="form-group">
-                    <label for="nome">Nome do Processo *</label>
-                    <input 
-                        type="text" 
-                        id="nome" 
-                        name="nome" 
-                        required
-                        placeholder="Ex: Licença de Funcionamento"
-                    >
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="orgao">Órgão *</label>
-                    <select id="orgao" name="orgao" required>
-                        <option value="">Selecione...</option>
-                        <option value="PREFEITURA">Prefeitura</option>
-                        <option value="BOMBEIROS">Bombeiros</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="categoria">Categoria *</label>
-                    <select id="categoria" name="categoria" required>
-                        <option value="">Selecione...</option>
-                        <option value="FUNCIONAMENTO">Funcionamento</option>
-                        <option value="CONSTRUCAO">Construção</option>
-                        <option value="SANITARIO">Sanitário</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="empresa">Empresa *</label>
-                    <select id="empresa" name="empresa" required>
-                        <option value="">Selecione...</option>
-                        {% for empresa in empresas %}
-                            <option value="{{ empresa.id }}">{{ empresa.nome_empresa }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="data_vencimento">Data de Vencimento</label>
-                    <input 
-                        type="date" 
-                        id="data_vencimento" 
-                        name="data_vencimento"
-                    >
-                    <small>Será calculada automaticamente com base no órgão</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="responsaveis">Responsáveis</label>
-                    <select id="responsaveis" name="responsaveis" multiple>
-                        {% for usuario in usuarios %}
-                            <option value="{{ usuario.id }}">{{ usuario.get_full_name|default:usuario.username }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group full-width">
-                <label for="descricao">Descrição</label>
-                <textarea 
-                    id="descricao" 
-                    name="descricao"
-                    rows="4"
-                    placeholder="Detalhes adicionais sobre o processo..."
-                ></textarea>
-            </div>
-
-            <div class="form-actions">
-                <button type="button" class="btn-secundario" onclick="fecharModal()">
-                    Cancelar
-                </button>
-                <button type="submit" class="btn-primario">
-                    <i class="fa-solid fa-save"></i> Salvar Processo
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
     <script src="{% static 'scripts/gerenciamento_processos.js' %}"></script>
 {% endblock %}
