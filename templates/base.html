@@ -7,6 +7,7 @@
     <title>{% block title %}Base | Teste{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
     <script src="https://kit.fontawesome.com/bf92c72d09.js" crossorigin="anonymous"></script>
+    {% block extra_css %}{% endblock %}
 </head>
 <body style="padding: 20px">
     <header class="cabecalho_principal">
@@ -31,5 +32,6 @@
     <main class="conteudo_principal">
         {% block content %}{% endblock %}
     </main>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
