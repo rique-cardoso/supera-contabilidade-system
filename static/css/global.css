@@ -11,6 +11,7 @@
 
 :root{
     --main: #102A43;
+    --main-background: #102A4326;
     --secondary: #B9D037;
     --light-font: #424242;
     --light-font2: #353535;
@@ -40,7 +41,7 @@ header.cabecalho_principal{
 }
 
 header.cabecalho_principal, main.conteudo_principal{
-  background-color: var(--area-background);
+  background-color: var(--main-background);
   border-radius: 20px;
 }
 

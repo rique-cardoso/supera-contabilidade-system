@@ -26,19 +26,39 @@ main.conteudo_principal {
 
 /* Colunas do Kanban */
 .kanban-column {
-    min-width: 320px; /* Largura fixa para forçar o scroll horizontal quando houver muitas */
-    max-width: 320px;
+    min-width: 300px; /* Largura fixa para forçar o scroll horizontal quando houver muitas */
+    max-width: 300px;
     display: flex;
     flex-direction: column;
     border-radius: 15px;
     overflow: hidden;
     background-color: #fff; /* Fundo padrão antes de aplicar a opacidade */
-    border: 1px solid var(--contour-form);
 }
 
 .column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 15px;
     text-align: center;
+}
+
+.column-header *{
+    display: block;
+}
+
+.column-header i{
+    cursor: pointer;
+    transition: opacity ease-in .2s;
+}
+
+.column-header i:hover{
+    opacity: .8;
+}
+
+.titulo-status{
+    padding: 2px 8px;
+    border-radius: 20px;
 }
 
 /* Container de Cards: permite rolagem apenas VERTICAL */
