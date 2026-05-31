@@ -105,3 +105,119 @@ main.conteudo_principal {
     background: var(--contour-form);
     border-radius: 10px;
 }
+
+/* TEMPLATE CARDS */
+/* 1. Mapeamento da variável de tema com base no status atual do card */
+.processo-card[data-status="EXCLUIDO"]  { --card-theme: #353535; /* Fundo escuro como no seu anexo */ }
+.processo-card[data-status="ATIVO"]     { --card-theme: var(--st-ativo); }
+.processo-card[data-status="VENCENDO"]  { --card-theme: var(--st-vencendo); }
+.processo-card[data-status="VENCIDO"]   { --card-theme: var(--st-vencido); }
+.processo-card[data-status="CONCLUIDO"] { --card-theme: var(--st-concluido); }
+
+/* Container principal do Card */
+.processo-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Garante que a barra inferior respeite o arredondamento */
+    cursor: grab;
+    user-select: none;
+    border: 1px solid #e0e0e0;
+    /* Valor padrão de fallback (prevenção caso o JS atrase em inserir o data-status) */
+    --card-theme: var(--light-font2);
+}
+
+/* Efeito ao arrastar (se estiver usando o JS de Drag and Drop) */
+.processo-card:active {
+    cursor: grabbing;
+}
+.processo-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+/* Área interna do card com os espaçamentos */
+.card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaço entre as linhas do card */
+}
+
+/* Cabeçalho do Card (Título e Botões) */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.card-titulo {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--light-font2);
+}
+
+.card-acoes {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-card-acao {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    /* A cor dos botões agora segue o tema do card */
+    color: var(--card-theme);
+    transition: opacity 0.2s; /* Trocamos a transição de color para opacity */
+}
+
+.btn-card-acao:hover {
+    /* Em vez de fixar o azul no hover, apenas reduzimos a opacidade para manter a coerência da cor */
+    opacity: 0.6; 
+}
+
+/* Informações com Ícones (Categoria, Data, Status) */
+.card-categoria, .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--light-font);
+}
+
+.card-categoria i, .card-meta i {
+    /* Os ícones agora acompanham o tema dinamicamente */
+    color: var(--card-theme); 
+    width: 16px; /* Mantém os ícones alinhados verticalmente */
+    text-align: center;
+}
+
+/* Etiqueta de Protocolo escurecida */
+.card-protocolo {
+    /* O fundo agora é dinâmico */
+    background-color: var(--card-theme); 
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    width: fit-content;
+    margin-top: 5px;
+}
+
+/* Barra inferior (Rodapé) colada no card */
+.card-prazo {
+    /* O fundo da barra agora é dinâmico */
+    background-color: var(--card-theme); 
+    color: #ffffff;
+    text-align: center;
+    padding: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    width: 100%;
+}

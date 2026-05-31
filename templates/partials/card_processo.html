@@ -1,57 +1,51 @@
-<!-- templates/partials/card_processo.html -->
-<div 
-    class="processo-card" 
-    draggable="true"
-    data-processo-id="{{ processo.id }}"
->
-    <div class="card-header">
-        <div class="card-titulo">{{ processo.nome }}</div>
-        <div class="card-acoes">
-            <button 
-                class="btn-card-acao btn-editar-card" 
-                title="Editar"
-                onclick="editarProcesso({{ processo.id }})"
-            >
-                <i class="fa-solid fa-pencil"></i>
-            </button>
-            <button 
-                class="btn-card-acao btn-deletar-card" 
-                title="Deletar"
-                onclick="confirmarDelecao({{ processo.id }})"
-            >
-                <i class="fa-solid fa-trash"></i>
-            </button>
+<div class="processo-card" draggable="true" data-processo-id="{{ processo.id }}" data-status="{{ processo.status }}">
+    
+    <div class="card-content">
+        <div class="card-header">
+            <div class="card-titulo">{{ processo.nome }}</div>
+            <div class="card-acoes">
+                <button class="btn-card-acao btn-editar-card" title="Editar" onclick="editarProcesso({{ processo.id }})">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button class="btn-card-acao btn-deletar-card" title="Mais opções">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+            </div>
         </div>
+
+        <div class="card-categoria">
+            <i class="fa-solid fa-tag"></i> {{ processo.get_categoria_display }}
+        </div>
+
+        <div class="card-meta">
+            {% if processo.orgao == 'PREFEITURA' %}
+                <i class="fa-solid fa-building"></i>
+            {% else %}
+                <i class="fa-solid fa-calendar-days"></i>
+            {% endif %}
+            <span>ter - 17 mar</span>
+        </div>
+
+        <div class="card-meta">
+            <i class="fa-regular fa-circle-dashed"></i>
+            {% if processo.status == 'ATIVO' %}
+                <span style="color: var(--st-ativo);">Ativo</span>
+            {% elif processo.status == 'VENCENDO' %}
+                <span style="color: var(--st-vencendo);">Vencendo</span>
+            {% elif processo.status == 'VENCIDO' %}
+                <span style="color: var(--st-vencido);">Vencido</span>
+            {% elif processo.status == 'CONCLUIDO' %}
+                <span style="color: var(--st-concluido);">Concluído</span>
+            {% else %}
+                <span>{{ processo.get_status_display }}</span>
+            {% endif %}
+        </div>
+
+        <span class="card-protocolo">Protocolo: {{ processo.protocolo }}</span>
     </div>
 
-    <div class="card-categoria">{{ processo.get_categoria_display }}</div>
-
-    <div class="card-meta">
-        {% if processo.orgao == 'PREFEITURA' %}
-            <i class="fa-solid fa-building"></i>
-        {% else %}
-            <i class="fa-solid fa-fire"></i>
-        {% endif %}
-        <span>{{ processo.get_orgao_display }} | 1er - 17 mar</span>
+    <div class="card-prazo">
+        vencendo em {{ processo.dias_para_vencer }} dias
     </div>
 
-    <div class="card-meta">
-        <i class="fa-solid fa-circle-check"></i>
-        {% if processo.status == 'ATIVO' %}
-            <span style="color: var(--st-ativo);">✓ Ativo</span>
-        {% elif processo.status == 'VENCENDO' %}
-            <span style="color: var(--st-vencendo);">⚠ Vencendo</span>
-        {% elif processo.status == 'VENCIDO' %}
-            <span style="color: var(--st-vencido);">✗ Vencido</span>
-        {% elif processo.status == 'CONCLUIDO' %}
-            <span style="color: var(--st-concluido);">✓ Concluído</span>
-        {% else %}
-            <span>{{ processo.get_status_display }}</span>
-        {% endif %}
-    </div>
-
-    <div class="card-footer">
-        <span class="card-protocolo">{{ processo.protocolo }}</span>
-        <span class="card-prazo">vencendo em {{ processo.dias_para_vencer }} dias</span>
-    </div>
 </div>

@@ -29,7 +29,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.insertBefore(draggable, afterElement); // Solta entre os cards
             }
         });
+
+        // NOVO: Evento de drop para atualizar o status e salvar no banco
+        container.addEventListener('drop', () => {
+            const draggable = document.querySelector('.dragging');
+            
+            // Descobre qual é a coluna atual onde o card foi solto
+            const colunaPai = container.closest('.kanban-column');
+            const novoStatus = colunaPai.dataset.status;
+
+            // Se o status mudou, atualiza a interface e o banco
+            if (draggable.dataset.status !== novoStatus) {
+                // 1. Atualiza o visual instantaneamente (o CSS faz o resto)
+                draggable.dataset.status = novoStatus;
+
+                // 2. Chama a função para atualizar no Django
+                atualizarStatusNoBanco(draggable.dataset.processoId, novoStatus);
+            }
+        });
     });
+
+    // Função para enviar a atualização para sua view no Django
+    function atualizarStatusNoBanco(processoId, novoStatus) {
+        // Exemplo usando Fetch API. Lembre-se de criar a URL e a View correspondente no Django.
+        fetch(`/processos/atualizar-status/${processoId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Necessário para o Django aceitar a requisição POST
+                'X-CSRFToken': getCookie('csrftoken') 
+            },
+            body: JSON.stringify({ status: novoStatus })
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error("Erro ao atualizar o status no banco.");
+                // Opcional: Reverter o card para a coluna anterior caso dê erro no servidor
+            }
+        })
+        .catch(error => console.error("Erro de conexão:", error));
+    }
+
+    // Função auxiliar padrão do Django para pegar o CSRF Token pelo JS
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
     // Função matemática auxiliar para descobrir em qual vão do Kanban o mouse está
     function getDragAfterElement(container, y) {
