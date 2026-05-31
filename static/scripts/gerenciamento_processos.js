@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const cards = document.querySelectorAll('.kanban-card');
+    const cards = document.querySelectorAll('.processo-card');
     const containers = document.querySelectorAll('.cards-container');
 
     // Adiciona os eventos em cada card
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função matemática auxiliar para descobrir em qual vão do Kanban o mouse está
     function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.kanban-card:not(.dragging)')];
+        const draggableElements = [...container.querySelectorAll('.processo-card:not(.dragging)')];
 
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();

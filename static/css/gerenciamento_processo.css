@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /* Ajuste na tag main (conteudo_principal) para ocupar todo o espaço sem rolar a página inteira */
 main.conteudo_principal {
     display: flex;
@@ -26,8 +27,8 @@ main.conteudo_principal {
 
 /* Colunas do Kanban */
 .kanban-column {
-    min-width: 300px; /* Largura fixa para forçar o scroll horizontal quando houver muitas */
-    max-width: 300px;
+    min-width: 380px; /* Largura fixa para forçar o scroll horizontal quando houver muitas */
+    max-width: 380px;
     display: flex;
     flex-direction: column;
     border-radius: 15px;
@@ -114,13 +115,42 @@ main.conteudo_principal {
 .processo-card[data-status="VENCIDO"]   { --card-theme: var(--st-vencido); }
 .processo-card[data-status="CONCLUIDO"] { --card-theme: var(--st-concluido); }
 
+/* Faz a cor do texto herdar automaticamente o tema atual do card*/
+.card-status-text{
+    color: var(--card-theme);
+}
+
+/* Injeta o texto correspondente baseando-se no data-status do container pai */
+.processo-card[data-status="EXCLUIDO"]  .card-status-text::after { content: "Excluído"; }
+.processo-card[data-status="ATIVO"]     .card-status-text::after { content: "Ativo"; }
+.processo-card[data-status="VENCENDO"]  .card-status-text::after { content: "Vencendo"; }
+.processo-card[data-status="VENCIDO"]   .card-status-text::after { content: "Vencido"; }
+.processo-card[data-status="CONCLUIDO"] .card-status-text::after { content: "Concluído"; }
+
+/* Esconde todos os ícones de status por padrão */
+.icon-status {
+    display: none;
+    /* O currentColor do SVG fará ele puxar essa cor automaticamente! */
+    color: var(--card-theme); 
+}
+
+/* Mostra apenas o ícone correspondente ao status do card */
+.processo-card[data-status="EXCLUIDO"]  .icon-status[data-icon="EXCLUIDO"],
+.processo-card[data-status="ATIVO"]     .icon-status[data-icon="ATIVO"],
+.processo-card[data-status="VENCENDO"]  .icon-status[data-icon="VENCENDO"],
+.processo-card[data-status="VENCIDO"]   .icon-status[data-icon="VENCIDO"],
+.processo-card[data-status="CONCLUIDO"] .icon-status[data-icon="CONCLUIDO"] {
+    display: inline-block;
+}
+
 /* Container principal do Card */
 .processo-card {
     background-color: #ffffff;
-    border-radius: 16px;
+    border-radius: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
     overflow: hidden; /* Garante que a barra inferior respeite o arredondamento */
     cursor: grab;
     user-select: none;
@@ -155,7 +185,7 @@ main.conteudo_principal {
 }
 
 .card-titulo {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 800;
     color: var(--light-font2);
 }

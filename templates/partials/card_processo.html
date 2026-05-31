@@ -1,51 +1,69 @@
-<div class="processo-card" draggable="true" data-processo-id="{{ processo.id }}" data-status="{{ processo.status }}">
-    
-    <div class="card-content">
-        <div class="card-header">
-            <div class="card-titulo">{{ processo.nome }}</div>
-            <div class="card-acoes">
-                <button class="btn-card-acao btn-editar-card" title="Editar" onclick="editarProcesso({{ processo.id }})">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-                <button class="btn-card-acao btn-deletar-card" title="Mais opções">
-                    <i class="fa-solid fa-ellipsis"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="card-categoria">
-            <i class="fa-solid fa-tag"></i> {{ processo.get_categoria_display }}
-        </div>
-
-        <div class="card-meta">
-            {% if processo.orgao == 'PREFEITURA' %}
-                <i class="fa-solid fa-building"></i>
-            {% else %}
-                <i class="fa-solid fa-calendar-days"></i>
-            {% endif %}
-            <span>ter - 17 mar</span>
-        </div>
-
-        <div class="card-meta">
-            <i class="fa-regular fa-circle-dashed"></i>
-            {% if processo.status == 'ATIVO' %}
-                <span style="color: var(--st-ativo);">Ativo</span>
-            {% elif processo.status == 'VENCENDO' %}
-                <span style="color: var(--st-vencendo);">Vencendo</span>
-            {% elif processo.status == 'VENCIDO' %}
-                <span style="color: var(--st-vencido);">Vencido</span>
-            {% elif processo.status == 'CONCLUIDO' %}
-                <span style="color: var(--st-concluido);">Concluído</span>
-            {% else %}
-                <span>{{ processo.get_status_display }}</span>
-            {% endif %}
-        </div>
-
-        <span class="card-protocolo">Protocolo: {{ processo.protocolo }}</span>
+<div
+  class="processo-card"
+  draggable="true"
+  data-processo-id="{{ processo.id }}"
+  data-status="{{ processo.status }}"
+>
+  <div class="card-content">
+    <div class="card-header">
+      <div class="card-titulo">{{ processo.nome }}</div>
+      <div class="card-acoes">
+        <button
+          class="btn-card-acao btn-editar-card"
+          title="Editar"
+          onclick="editarProcesso({{ processo.id }})"
+        >
+          <i class="fa-solid fa-pen-to-square"></i>
+        </button>
+        <button class="btn-card-acao btn-deletar-card" title="Mais opções">
+          <i class="fa-solid fa-ellipsis"></i>
+        </button>
+      </div>
     </div>
 
-    <div class="card-prazo">
-        vencendo em {{ processo.dias_para_vencer }} dias
+    <div class="card-categoria">
+      <i class="fa-solid fa-tag"></i> {{ processo.get_categoria_display }}
     </div>
 
+    <div class="card-meta">
+      {% if processo.orgao == 'PREFEITURA' %}
+      <i class="fa-solid fa-building"></i>
+      {% else %}
+      <i class="fa-solid fa-calendar-days"></i>
+      {% endif %}
+      <span>ter - 17 mar</span>
+    </div>
+
+    <div class="card-meta">
+      <i class="fa-solid fa-circle-minus icon-status" data-icon="EXCLUIDO"></i>
+      <i class="fa-solid fa-circle-play icon-status" data-icon="ATIVO"></i>
+
+      <svg
+        class="icon-status feather feather-alert-circle"
+        data-icon="VENCENDO"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+
+      <i class="fa-solid fa-circle-xmark icon-status" data-icon="VENCIDO"></i>
+      <i class="fa-solid fa-circle-check icon-status" data-icon="CONCLUIDO"></i>
+
+      <span class="card-status-text"></span>
+    </div>
+
+    <span class="card-protocolo">Protocolo: {{ processo.protocolo }}</span>
+  </div>
+
+  <div class="card-prazo">vencendo em {{ processo.dias_para_vencer }} dias</div>
 </div>
