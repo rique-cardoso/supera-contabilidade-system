@@ -22,6 +22,10 @@
                     {% include 'partials/card_processo.html' with processo=processo %}
                 {% endfor %}
             </div>
+            <div class="footer" style="background-color: var(--area-background); color: var(--light-font2);">
+                <i class="fa-solid fa-plus footer_elemento"></i>
+                <button class="footer_elemento" style="color: var(--light-font2);">Adicionar Processo</button>
+            </div>
         </div>
 
         <!--STATUS ATIVOS-->
@@ -34,6 +38,10 @@
                 {% for processo in processos_ativos %}
                     {% include 'partials/card_processo.html' with processo=processo %}
                 {% endfor %}
+            </div>
+            <div class="footer" style="background-color: var(--st-ativo-background); color: var(--st-ativo);">
+                <i class="fa-solid fa-plus footer_elemento"></i>
+                <button class="footer_elemento" style="color: var(--st-ativo);">Adicionar Processo</button>
             </div>
         </div>
 
@@ -48,6 +56,10 @@
                     {% include 'partials/card_processo.html' with processo=processo %}
                 {% endfor %}
             </div>
+            <div class="footer" style="background-color: var(--st-vencendo-background); color: var(--st-vencendo);">
+                <i class="fa-solid fa-plus footer_elemento"></i>
+                <button class="footer_elemento" style="color: var(--st-vencendo);">Adicionar Processo</button>
+            </div>
         </div>
 
         <!--STATUS VENCIDOS-->
@@ -61,6 +73,10 @@
                     {% include 'partials/card_processo.html' with processo=processo %}
                 {% endfor %}
             </div>
+            <div class="footer" style="background-color: var(--st-vencido-background); color: var(--st-vencido);">
+                <i class="fa-solid fa-plus footer_elemento"></i>
+                <button class="footer_elemento" style="color: var(--st-vencido);">Adicionar Processo</button>
+            </div>
         </div>
 
         <!--STATUS CONCLUÍDOS-->
@@ -73,6 +89,10 @@
                 {% for processo in processos_concluidos %}
                     {% include 'partials/card_processo.html' with processo=processo %}
                 {% endfor %}
+            </div>
+            <div class="footer" style="background-color: var(--st-concluido-background); color: var(--st-concluido);">
+                <i class="fa-solid fa-plus footer_elemento"></i>
+                <button class="footer_elemento" style="color: var(--st-concluido);">Adicionar Processo</button>
             </div>
         </div>
     </div>

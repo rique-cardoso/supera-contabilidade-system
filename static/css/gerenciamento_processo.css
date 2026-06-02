@@ -251,3 +251,21 @@ main.conteudo_principal {
     font-weight: 700;
     width: 100%;
 }
+
+.footer{
+    height: 60px;
+    padding-top: 10px;
+    padding-left: 20px;
+}
+
+.footer button{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.footer:has(.footer_elemento:hover) .footer_elemento{
+    opacity: 0.8;
+}
