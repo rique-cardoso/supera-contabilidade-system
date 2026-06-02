@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para enviar a atualização para sua view no Django
     function atualizarStatusNoBanco(processoId, novoStatus) {
         // Exemplo usando Fetch API. Lembre-se de criar a URL e a View correspondente no Django.
-        fetch(`/processos/atualizar-status/${processoId}/`, {
-            method: 'POST',
+        fetch(`/api/processos/${processoId}/status/`, {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 // Necessário para o Django aceitar a requisição POST

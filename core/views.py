@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_list_or_404
+from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -140,7 +140,7 @@ def atualizar_status_processo(request, processo_id):
     """
     import json
 
-    processo = get_list_or_404(Processo, id=processo_id)
+    processo = get_object_or_404(Processo, id=processo_id)
 
     try:
         data = json.loads(request.body)
