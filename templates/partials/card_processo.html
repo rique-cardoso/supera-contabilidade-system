@@ -26,12 +26,8 @@
     </div>
 
     <div class="card-meta">
-      {% if processo.orgao == 'PREFEITURA' %}
-      <i class="fa-solid fa-building"></i>
-      {% else %}
       <i class="fa-solid fa-calendar-days"></i>
-      {% endif %}
-      <span>ter - 17 mar</span>
+      <span>{{ processo.data_vencimento_formatada }}</span>
     </div>
 
     <div class="card-meta">

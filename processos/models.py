@@ -203,6 +203,37 @@ class Processo(models.Model):
     def dias_para_vencer(self):
         """Retorna dias até vencimento (útil para template)"""
         return (self.data_vencimento - date.today()).days
+
+    @property
+    def data_vencimento_formatada(self):
+        """Formata a data de vencimento para o card Kanban"""
+        if not self.data_vencimento:
+            return ""
+        hoje = date.today()
+        vencimento = self.data_vencimento
+
+        # 1. Checar se é hoje ou ontem
+        if vencimento == hoje:
+            return "hoje"
+        elif vencimento == hoje - timedelta(days=1):
+            return "ontem"
+        elif vencimento == hoje + timedelta(days=1):
+            return "amanhã"
+        
+        # 2. Checar se é muito distante (ano difernete)
+        if vencimento.year != hoje.year:
+            # Retorna no formato dd/mm/yy (ex: 02/06/27)
+            return vencimento.strftime("%d/%m/%y")
+        
+        # 3. Data no mesmo ano (ex: ter - 02 jun)
+        dias_semana = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']
+        meses = ['', 'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+
+        dia_semana_str = dias_semana[vencimento.weekday()]
+        dia_str = f"{vencimento.day:02d}" # Garante dois dígitos
+        mes_str = meses[vencimento.month]
+
+        return f"{dia_semana_str} - {dia_str} {mes_str}"
     
     def pode_editar(self):
         """Verifica se processo pode ser editado (RF23)"""
