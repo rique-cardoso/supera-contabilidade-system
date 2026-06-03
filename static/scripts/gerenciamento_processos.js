@@ -149,7 +149,7 @@ function editarProcesso(processoId) {
             }
 
             // 3. Ajusta o visual do Modal
-            document.getElementById('modalTitle').childNodes[0].nodeValue = "Quiosque ";
+            document.getElementById('modalTitle').childNodes[0].nodeValue = data.nome || '';
             const badge = document.getElementById('modalProtocoloBadge');
             badge.innerText = `Protocolo: ${data.protocolo}`;
             badge.style.display = 'inline-block';
