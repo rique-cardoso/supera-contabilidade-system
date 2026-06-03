@@ -103,3 +103,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 });
+// ===== CONTROLE DO MODAL DE PROCESSOS =====
+
+function fecharModalProcesso(){
+    document.getElementById('modalProcessoOverlay').style.display = 'none';
+}
+
+function abrirModalCriacao(statusDestino = 'ATIVO'){
+    const form = document.getElementById('formProcesso');
+
+    // Limpa o formulário
+    form.reset();
+
+    // Ajusta o visual
+    document.getElementById('modalTitle').childNodes[0].nodeValue = "Novo Processo ";
+    document.getElementById('modalProtocoloBadge').style.display = 'none'
+
+    // Direciona o submit do form para a URL de criação
+    form.action = '/processos/criar/';
+
+    // Mostra o modal
+    document.getElementById('modalProcessoOverlay').style.display = 'flex';
+}
+
+function editarProcesso(processoId) {
+    // 1. Faz uma requisição GET para buscar os dados do processo
+    fetch(`/api/processos/${processoId}/obter/`)
+        .then(response => {
+            if(!response.ok) throw new Error("Erro ao buscar dados do processo");
+            return response.json();
+        })
+        .then(data => {
+            // 2. Preenche o formulário com os dados retornados
+            document.getElementById('id_nome').value = data.nome || '';
+            document.getElementById('id_protocolo').value = data.protocolo || '';
+            document.getElementById('id_descricao').value = data.descricao || '';
+            document.getElementById('id_orgao').value = data.orgao || 'PREFEITURA';
+            document.getElementById('id_categoria').value = data.categoria || 'FUNCIONAMENTO';
+
+            if (data.empresa_id) {
+                document.getElementById('id_empresa').value = data.empresa_id;
+            }
+            if (data.data_vencimento) {
+                document.getElementById('id_data_vencimento').value = data.data_vencimento;
+            }
+
+            // 3. Ajusta o visual do Modal
+            document.getElementById('modalTitle').childNodes[0].nodeValue = "Quiosque ";
+            const badge = document.getElementById('modalProtocoloBadge');
+            badge.innerText = `Protocolo: ${data.protocolo}`;
+            badge.style.display = 'inline-block';
+
+            // 4. Muda a action do formulário para editar
+            document.getElementById('formProcesso').action = `/processos/editar/${processoId}/`;
+
+            // 5. Mostra o modal
+            document.getElementById('modalProcessoOverlay').style.display = 'flex';
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Não foi possível carregar as informações do processo.")
+        })
+}

@@ -15,7 +15,7 @@
         <div class="kanban-column" style="border: 1px solid var(--light-font2)" data-status="EXCLUIDO">
             <div class="column-header" style="background-color: var(--area-background); color: var(--light-font2);">
                 <h3 class="titulo-status" style="background-color: var(--light-font2); color: #fff;">Excluídos</h3>
-                <i class="fa-solid fa-plus"></i>
+                <button class="btn-add" onclick="abrirModalCriacao('EXCLUIDOS')"><i class="fa-solid fa-plus"></i></button>
             </div>
             <div class="cards-container" style="background-color: var(--area-background);">
                 {% for processo in processos_excluidos %}
@@ -24,7 +24,7 @@
             </div>
             <div class="footer" style="background-color: var(--area-background); color: var(--light-font2);">
                 <i class="fa-solid fa-plus footer_elemento"></i>
-                <button class="footer_elemento" style="color: var(--light-font2);">Adicionar Processo</button>
+                <button class="footer_elemento" style="color: var(--light-font2);" onclick="abrirModalCriacao('EXCLUIDOS')">Adicionar Processo</button>
             </div>
         </div>
 
@@ -32,7 +32,7 @@
         <div class="kanban-column" style="border: 1px solid var(--st-ativo)" data-status="ATIVO">
             <div class="column-header" style="background-color: var(--st-ativo-background); color: var(--st-ativo);">
                 <h3 class="titulo-status" style="background-color: var(--st-ativo); color: #fff;">Ativos</h3>
-                <i class="fa-solid fa-plus"></i>
+                <button class="btn-add" onclick="abrirModalCriacao('ATIVOS')"><i class="fa-solid fa-plus"></i></button>
             </div>
             <div class="cards-container" style="background-color: var(--st-ativo-background);">
                 {% for processo in processos_ativos %}
@@ -41,7 +41,7 @@
             </div>
             <div class="footer" style="background-color: var(--st-ativo-background); color: var(--st-ativo);">
                 <i class="fa-solid fa-plus footer_elemento"></i>
-                <button class="footer_elemento" style="color: var(--st-ativo);">Adicionar Processo</button>
+                <button class="footer_elemento" style="color: var(--st-ativo);" onclick="abrirModalCriacao('ATIVOS')">Adicionar Processo</button>
             </div>
         </div>
 
@@ -49,7 +49,7 @@
         <div class="kanban-column" style="border: 1px solid var(--st-vencendo)" data-status="VENCENDO">
             <div class="column-header" style="background-color: var(--st-vencendo-background); color: var(--st-vencendo);">
                 <h3 class="titulo-status" style="background-color: var(--st-vencendo); color: #fff;">Vencendo</h3>
-                <i class="fa-solid fa-plus"></i>
+                <button class="btn-add" onclick="abrirModalCriacao('VENCENDO')"><i class="fa-solid fa-plus"></i></button>
             </div>
             <div class="cards-container" style="background-color: var(--st-vencendo-background);">
                 {% for processo in processos_vencendo %}
@@ -58,7 +58,7 @@
             </div>
             <div class="footer" style="background-color: var(--st-vencendo-background); color: var(--st-vencendo);">
                 <i class="fa-solid fa-plus footer_elemento"></i>
-                <button class="footer_elemento" style="color: var(--st-vencendo);">Adicionar Processo</button>
+                <button class="footer_elemento" style="color: var(--st-vencendo);" onclick="abrirModalCriacao('VENCENDO')">Adicionar Processo</button>
             </div>
         </div>
 
@@ -66,7 +66,7 @@
         <div class="kanban-column" style="border: 1px solid var(--st-vencido)" data-status="VENCIDO">
             <div class="column-header" style="background-color: var(--st-vencido-background); color: var(--st-vencido);">
                 <h3 class="titulo-status" style="background-color: var(--st-vencido); color: #fff;">Vencidos</h3>
-                <i class="fa-solid fa-plus"></i>
+                <button class="btn-add" onclick="abrirModalCriacao('VENCIDO')"><i class="fa-solid fa-plus"></i></button>
             </div>
             <div class="cards-container" style="background-color: var(--st-vencido-background);">
                 {% for processo in processos_vencidos %}
@@ -75,7 +75,7 @@
             </div>
             <div class="footer" style="background-color: var(--st-vencido-background); color: var(--st-vencido);">
                 <i class="fa-solid fa-plus footer_elemento"></i>
-                <button class="footer_elemento" style="color: var(--st-vencido);">Adicionar Processo</button>
+                <button class="footer_elemento" style="color: var(--st-vencido);" onclick="abrirModalCriacao('VENCIDOS')">Adicionar Processo</button>
             </div>
         </div>
 
@@ -83,7 +83,7 @@
         <div class="kanban-column" style="border: 1px solid var(--st-concluido)" data-status="CONCLUIDO">
             <div class="column-header" style="background-color: var(--st-concluido-background); color: var(--st-concluido);">
                 <h3 class="titulo-status" style="background-color: var(--st-concluido); color: #fff;">Concluídos</h3>
-                <i class="fa-solid fa-plus"></i>
+                <button class="btn-add" onclick="abrirModalCriacao('CONCLUIDO')"><i class="fa-solid fa-plus"></i></button>
             </div>
             <div class="cards-container" style="background-color: var(--st-concluido-background);">
                 {% for processo in processos_concluidos %}
@@ -92,11 +92,13 @@
             </div>
             <div class="footer" style="background-color: var(--st-concluido-background); color: var(--st-concluido);">
                 <i class="fa-solid fa-plus footer_elemento"></i>
-                <button class="footer_elemento" style="color: var(--st-concluido);">Adicionar Processo</button>
+                <button class="footer_elemento" style="color: var(--st-concluido);" onclick="abrirModalCriacao('CONCLUIDOS')">Adicionar Processo</button>
             </div>
         </div>
     </div>
 </div>
+<!-- MODAL DE CRIAÇÃO / EDIÇÃO -->
+ {% include 'partials/modal_processo.html' %}
 {% endblock %}
 
 {% block extra_js %}

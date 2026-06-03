@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -89,7 +89,7 @@ def editar_processo(request, processo_id):
     """
     Edita um processo existente
     """
-    processo = get_list_or_404(Processo, id=processo_id)
+    processo = get_object_or_404(Processo, id=processo_id)
 
     if not processo.pode_editar():
         return JsonResponse({'erro': 'Processo excluído não pode ser editado'}, status=403)
@@ -105,6 +105,10 @@ def editar_processo(request, processo_id):
         data_vencimento_str = request.POST.get('data_vencimento')
         if data_vencimento_str:
             processo.data_vencimento = data_vencimento_str
+        
+        empresa_id = request.POST.get('empresa')
+        if empresa_id:
+            processo.empresa = get_object_or_404(Empresa, id=empresa_id)
         
         processo.save()
 
@@ -124,13 +128,33 @@ def deletar_processo(request, processo_id):
     Deleta um processo (marca como EXCLUIDO, não remove do BD)
     """
 
-    processo = get_list_or_404(Processo, id=processo_id)
+    processo = get_object_or_404(Processo, id=processo_id)
 
     # Marcar como excluído em vez de deletar
     processo.status = 'EXCLUIDO'
     processo.save()
 
     return JsonResponse({'mensagem': 'Processo excluído com sucesso'})
+
+@login_required
+@require_http_methods(["GET"])
+def obter_processo(request, processo_id):
+    """Retorna os dados do processo em JSON para popular o Modal de edição"""
+    processo = get_object_or_404(Processo, id=processo_id)
+
+    data = {
+        'id': processo.id,
+        'nome': processo.nome,
+        'protocolo': processo.protocolo,
+        'descricao': processo.descricao,
+        'orgao': processo.orgao,
+        'categoria': processo.categoria,
+        'status': processo.status,
+        'empresa_id': processo.empresa.id if processo.empresa else '',
+        'data_vencimento': processo.data_vencimento.strftime('%Y-%m-%d') if processo.data_vencimento else '',
+    }
+
+    return JsonResponse(data)
 
 @login_required
 @require_http_methods(["PATCH"])

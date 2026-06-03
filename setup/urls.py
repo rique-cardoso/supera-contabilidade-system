@@ -8,6 +8,7 @@ from core.views import (
     editar_processo,
     deletar_processo,
     atualizar_status_processo,
+    obter_processo,
     base
 )
 
@@ -23,8 +24,9 @@ urlpatterns = [
     path('processos/<int:processo_id>/editar/', editar_processo, name='editar_processo'),
     path('processos/<int:processo_id>/deletar/', deletar_processo, name='deletar_processo'),
 
-    # API para drag-and-drop
+    # API (Consultas e drag-and-drop)
     path('api/processos/<int:processo_id>/status/', atualizar_status_processo, name='atualizar_status_processo'),
+    path('api/processos/<int:processo_id>/obter/', obter_processo, name='obter_processo'),
 
     # Rotas de autenticação
     path('login/', auth_views.LoginView.as_view(
