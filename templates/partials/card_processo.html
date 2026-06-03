@@ -15,9 +15,21 @@
         >
           <i class="fa-solid fa-pen-to-square"></i>
         </button>
-        <button class="btn-card-acao btn-deletar-card" title="Mais opções">
-          <i class="fa-solid fa-ellipsis"></i>
-        </button>
+        <div class="dropdown-opcoes-card">
+          <button class="btn-card-acao btn-deletar-card btn-opcoes-dropdown" onclick="toggleMenuOpcoes(event, '{{ processo.id }}')" title="Mais opções">
+            <i class="fa-solid fa-ellipsis"></i>
+          </button>
+          <div id="dropdown-{{ processo.id }}" class="dropdown-conteudo">
+            <a href="#" onclick="softDeleteProcesso(event, '{{ processo.id }}')">
+              <i class="fa-solid fa-trash-can"></i> Excluir Processo
+            </a>
+            {% if request.user.role == 'admin' %}
+              <a href="#" class="btn-perigo" onclick="hardDeleteProcesso(event, '{{ processo.id }}')">
+                <i class="fa-solid fa-skull-crossbones"></i> Apagar Definitivo
+              </a>
+            {% endif %}
+          </div>
+        </div>
       </div>
     </div>
 

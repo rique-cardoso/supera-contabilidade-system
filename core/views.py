@@ -121,6 +121,7 @@ def editar_processo(request, processo_id):
     except Exception as e:
         return JsonResponse({'erro': str(e)}, status=400)
 
+# 1. SOFT DELETE (apenas altera o status)
 @login_required
 @require_http_methods(["DELETE"])
 def deletar_processo(request, processo_id):
@@ -135,6 +136,19 @@ def deletar_processo(request, processo_id):
     processo.save()
 
     return JsonResponse({'mensagem': 'Processo excluído com sucesso'})
+
+# 2. HARD DELETE (exclui o processo do BD)
+@login_required
+@require_http_methods(["DELETE"])
+def apagar_processo(request, processo_id):
+    """Apaga definitivamente do BD. Exclusivo para admins"""
+    # Proteção extra no backend
+    if request.user.role != 'admin':
+        return JsonResponse({'erro': 'Sem permissão para apagar processos.'}, status=403)
+    
+    processo = get_object_or_404(Processo, id=processo_id)
+    processo.delete() # Remove de fato a linha da tabela
+    return JsonResponse({'mensagem': 'Processo apagado permanentemente do banco de dados.'})
 
 @login_required
 @require_http_methods(["GET"])

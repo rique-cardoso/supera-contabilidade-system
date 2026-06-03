@@ -103,8 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 });
-// ===== CONTROLE DO MODAL DE PROCESSOS =====
 
+
+// ===== CONTROLE DO MODAL DE PROCESSOS =====
 function fecharModalProcesso(){
     document.getElementById('modalProcessoOverlay').style.display = 'none';
 }
@@ -164,4 +165,12 @@ function editarProcesso(processoId) {
             console.error(error);
             alert("Não foi possível carregar as informações do processo.")
         })
+}
+
+// ===== CONTROLE DO MODAL DE PROCESSOS =====
+// Função para abirr/fechar o menu do card específico
+function toggleMenuOpcoes(event, processoId){
+    event.preventDefault();
+    event.stopPropagation(); // Evita que o evento de drag dispare acidentalmente 
+    // continua à partir daqui
 }
