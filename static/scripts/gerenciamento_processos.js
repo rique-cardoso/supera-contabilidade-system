@@ -95,6 +95,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Seleciona o contêiner do Kanban
+const slider = document.getElementById('kanbanBoard');
+
+// Variáveis de controle
+let isDown = false; // Indica se o mouse está pressionando
+let startX; // Posição inicial do clique no eixo X
+let scrollLeft; // Posição inicial da barra de rolagem
+
+// 1. Quando o usuário CLICA (Aperta o botão do mouse)
+slider.addEventListener('mousedown', (e) => {
+    isDown = true;
+
+    // Calcula exatamente onde ocorreu o clique dentro do contêiner
+    startX = e.pageX - slider.offsetLeft
+
+    // Salva a posição atual da barra de rolagem
+    scrollLeft = slider.scrollLeft;
+})
+
+// 2. Quando o usuário SOLTA o clique
+slider.addEventListener('mouseup', () => {
+    isDown = false;
+})
+
+// 3. Quando o mouse SAI da área do Kanban (caso o usuário arraste para fora)
+slider.addEventListener('mouseleave', () => {
+    isDown = false;
+})
+
+// 4. Quando o usuário MOVIMENTA o mouse
+slider.addEventListener('mousemove', e => {
+    // Se o mouse não estiver clicado, não faz nada
+    if(!isDown) return;
+
+    e.preventDefault(); // Previne comportamentos padrão (como arrastar imagens sem querer)
+    
+    // Descobre onde o mouse está agora
+    const x = e.pageX - slider.offsetLeft;
+
+    // Calcula a distância que o mouse percorreu desde o clique inicial
+    // Multiplicar por 2 (ou 3) aumenta a velociade do scroll ("fator de aceleração")
+    const walk = (x - startX) * 2;
+
+    // Aplica a nova posição da barra de rolagem
+    slider.scrollLeft = scrollLeft - walk;
+})
+
 
 // ===== CONTROLE DO MODAL DE PROCESSOS =====
 function fecharModalProcesso(){

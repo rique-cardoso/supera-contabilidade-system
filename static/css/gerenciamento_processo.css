@@ -23,6 +23,12 @@ main.conteudo_principal {
     overflow-y: hidden;
     flex: 1; /* Preenche a altura disponível da tela */
     padding-bottom: 10px; /* Dá espaço para a barra de rolagem não sobrepor o conteúdo */
+    cursor: grab;
+    user-select: none;
+}
+
+.kanban-board:active{
+    cursor: grabbing;
 }
 
 /* Colunas do Kanban */
