@@ -16,6 +16,13 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// ===== VARIÁVEIS GLOBAIS DE AUTO-SCROLL =====
+// Definidas aqui em cima para serem acessadas por todo o arquivo
+let direcaoRolagem = 0; // 0 = parado, 1 = direita, -1 = esquerda
+const zonaGatilho = 100; // Distância da borda em pixels para ativar a rolagem
+const velocidadeRolagem = 12; // Velocidade do auto-scroll
+
+
 // ===== INICIALIZAÇÃO DO KANBAN =====
 document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('.processo-card');
@@ -29,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
+            // NOVO: Para o auto-scroll imediatamente se o usuário soltar o card
+            direcaoRolagem = 0; 
         });
     });
 
@@ -66,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken') // Agora vai funcionar!
+                'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({ status: novoStatus })
         })
@@ -95,52 +104,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
+// ===== CONTROLES DE ROLAGEM DO KANBAN (GRAB & AUTO-SCROLL) =====
+
 // Seleciona o contêiner do Kanban
 const slider = document.getElementById('kanbanBoard');
 
-// Variáveis de controle
+// Variáveis de controle do Grab to Scroll
 let isDown = false; // Indica se o mouse está pressionando
 let startX; // Posição inicial do clique no eixo X
 let scrollLeft; // Posição inicial da barra de rolagem
 
-// 1. Quando o usuário CLICA (Aperta o botão do mouse)
+// 1. Grab to Scroll: Quando o usuário CLICA (Aperta o botão do mouse)
 slider.addEventListener('mousedown', (e) => {
     isDown = true;
-
-    // Calcula exatamente onde ocorreu o clique dentro do contêiner
-    startX = e.pageX - slider.offsetLeft
-
-    // Salva a posição atual da barra de rolagem
+    startX = e.pageX - slider.offsetLeft;
     scrollLeft = slider.scrollLeft;
-})
+});
 
-// 2. Quando o usuário SOLTA o clique
+// 2. Grab to Scroll: Quando o usuário SOLTA o clique
 slider.addEventListener('mouseup', () => {
     isDown = false;
-})
+});
 
-// 3. Quando o mouse SAI da área do Kanban (caso o usuário arraste para fora)
+// 3. Grab to Scroll: Quando o mouse SAI da área do Kanban
 slider.addEventListener('mouseleave', () => {
     isDown = false;
-})
+});
 
-// 4. Quando o usuário MOVIMENTA o mouse
+// 4. Grab to Scroll: Quando o usuário MOVIMENTA o mouse
 slider.addEventListener('mousemove', e => {
-    // Se o mouse não estiver clicado, não faz nada
     if(!isDown) return;
-
-    e.preventDefault(); // Previne comportamentos padrão (como arrastar imagens sem querer)
-    
-    // Descobre onde o mouse está agora
+    e.preventDefault(); 
     const x = e.pageX - slider.offsetLeft;
-
-    // Calcula a distância que o mouse percorreu desde o clique inicial
-    // Multiplicar por 2 (ou 3) aumenta a velociade do scroll ("fator de aceleração")
     const walk = (x - startX) * 2;
-
-    // Aplica a nova posição da barra de rolagem
     slider.scrollLeft = scrollLeft - walk;
-})
+});
+
+// 5. NOVO: Eventos para acionar o Auto-scroll ao arrastar um card
+slider.addEventListener('dragover', (e) => {
+    // Pega as medidas exatas do quadro na tela do usuário
+    const quadroRect = slider.getBoundingClientRect();
+    const posicaoMouseX = e.clientX;
+
+    // Lógica para definir a direção com base nas zonas invisíveis da borda
+    if (posicaoMouseX > quadroRect.right - zonaGatilho) {
+        direcaoRolagem = 1; // Rolar para a direita
+    } else if (posicaoMouseX < quadroRect.left + zonaGatilho) {
+        direcaoRolagem = -1; // Rolar para a esquerda
+    } else {
+        direcaoRolagem = 0; // Ficar parado
+    }
+});
+
+// Garante que o motor pare se o evento de soltar acontecer direto no contêiner
+slider.addEventListener('drop', () => direcaoRolagem = 0);
+slider.addEventListener('dragleave', () => direcaoRolagem = 0);
+
+// 6. NOVO: O Motor de Animação do Auto-scroll
+function motorDeRolagemAutomatica() {
+    if (direcaoRolagem !== 0) {
+        slider.scrollLeft += (direcaoRolagem * velocidadeRolagem);
+    }
+    // Loop infinito otimizado rodando em segundo plano (60fps)
+    requestAnimationFrame(motorDeRolagemAutomatica);
+}
+
+// Dá a partida no motor quando a página carrega
+motorDeRolagemAutomatica();
 
 
 // ===== CONTROLE DO MODAL DE PROCESSOS =====
@@ -190,6 +221,7 @@ function editarProcesso(processoId) {
         })
 }
 
+
 // ===== CONTROLE DO MENU DROPDOWN =====
 function toggleMenuOpcoes(event, processoId){
     event.preventDefault();
@@ -215,6 +247,7 @@ window.addEventListener('click', function(event){
     }
 });
 
+
 // ===== FUNÇÕES DE DELEÇÃO =====
 function softDeleteProcesso(event, processoId){
     event.preventDefault();
@@ -227,7 +260,7 @@ function softDeleteProcesso(event, processoId){
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken') // Agora vai funcionar!
+            'X-CSRFToken': getCookie('csrftoken')
         }
     })
     .then(response => {
@@ -252,7 +285,7 @@ function softDeleteProcesso(event, processoId){
 function hardDeleteProcesso(event, processoId){
     event.preventDefault();
 
-    if(!confirm("ATENÇÃO: Você está prestes a APAGAR DEFINITIVIAMENTE este processo o branco e dados. Esta ação é irreversível. Continuar?")){
+    if(!confirm("ATENÇÃO: Você está prestes a APAGAR DEFINITIVAMENTE este processo do banco de dados. Esta ação é irreversível. Continuar?")){
         return; 
     }
 
@@ -260,7 +293,7 @@ function hardDeleteProcesso(event, processoId){
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken') // Agora vai funcionar!
+            'X-CSRFToken': getCookie('csrftoken')
         }
     })
     .then(response => {
