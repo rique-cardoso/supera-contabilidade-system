@@ -6,7 +6,7 @@
 >
   <div class="card-content">
     <div class="card-header">
-      <div class="card-titulo">{{ processo.nome }}</div>
+      <div class="card-titulo" onclick="editarProcesso({{ processo.id }})" title="Editar processo" >{{ processo.nome }}</div>
       <div class="card-acoes">
         <button
           class="btn-card-acao btn-editar-card"
