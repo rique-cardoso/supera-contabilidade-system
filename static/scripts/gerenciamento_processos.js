@@ -1,3 +1,22 @@
+// ===== FUNÇÕES AUXILIARES GLOBAIS =====
+
+// Função auxiliar padrão do Django para pegar o CSRF Token pelo JS
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// ===== INICIALIZAÇÃO DO KANBAN =====
 document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('.processo-card');
     const containers = document.querySelectorAll('.cards-container');
@@ -5,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Adiciona os eventos em cada card
     cards.forEach(card => {
         card.addEventListener('dragstart', () => {
-            // Adiciona uma classe para dar o efeito de opacidade enquanto arrasta
             card.classList.add('dragging');
         });
 
@@ -17,33 +35,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Adiciona os eventos nas colunas (zonas de soltar)
     containers.forEach(container => {
         container.addEventListener('dragover', e => {
-            e.preventDefault(); // Previne o comportamento padrão para permitir o "drop"
+            e.preventDefault();
             
-            // Descobre em qual posição o card deve entrar (antes ou depois de outro card)
             const afterElement = getDragAfterElement(container, e.clientY);
             const draggable = document.querySelector('.dragging');
             
             if (afterElement == null) {
-                container.appendChild(draggable); // Solta no final da lista
+                container.appendChild(draggable);
             } else {
-                container.insertBefore(draggable, afterElement); // Solta entre os cards
+                container.insertBefore(draggable, afterElement);
             }
         });
 
-        // NOVO: Evento de drop para atualizar o status e salvar no banco
+        // Evento de drop para atualizar o status e salvar no banco
         container.addEventListener('drop', () => {
             const draggable = document.querySelector('.dragging');
-            
-            // Descobre qual é a coluna atual onde o card foi solto
             const colunaPai = container.closest('.kanban-column');
             const novoStatus = colunaPai.dataset.status;
 
-            // Se o status mudou, atualiza a interface e o banco
             if (draggable.dataset.status !== novoStatus) {
-                // 1. Atualiza o visual instantaneamente (o CSS faz o resto)
                 draggable.dataset.status = novoStatus;
-
-                // 2. Chama a função para atualizar no Django
                 atualizarStatusNoBanco(draggable.dataset.processoId, novoStatus);
             }
         });
@@ -51,39 +62,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função para enviar a atualização para sua view no Django
     function atualizarStatusNoBanco(processoId, novoStatus) {
-        // Exemplo usando Fetch API. Lembre-se de criar a URL e a View correspondente no Django.
         fetch(`/api/processos/${processoId}/status/`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                // Necessário para o Django aceitar a requisição POST
-                'X-CSRFToken': getCookie('csrftoken') 
+                'X-CSRFToken': getCookie('csrftoken') // Agora vai funcionar!
             },
             body: JSON.stringify({ status: novoStatus })
         })
         .then(response => {
             if (!response.ok) {
                 console.error("Erro ao atualizar o status no banco.");
-                // Opcional: Reverter o card para a coluna anterior caso dê erro no servidor
             }
         })
         .catch(error => console.error("Erro de conexão:", error));
-    }
-
-    // Função auxiliar padrão do Django para pegar o CSRF Token pelo JS
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
     }
 
     // Função matemática auxiliar para descobrir em qual vão do Kanban o mouse está
@@ -92,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
-            // Pega o meio do card para saber se o mouse está acima ou abaixo da metade dele
             const offset = y - box.top - box.height / 2;
             
             if (offset < 0 && offset > closest.offset) {
@@ -112,30 +103,20 @@ function fecharModalProcesso(){
 
 function abrirModalCriacao(statusDestino = 'ATIVO'){
     const form = document.getElementById('formProcesso');
-
-    // Limpa o formulário
     form.reset();
-
-    // Ajusta o visual
     document.getElementById('modalTitle').childNodes[0].nodeValue = "Novo Processo ";
     document.getElementById('modalProtocoloBadge').style.display = 'none'
-
-    // Direciona o submit do form para a URL de criação
     form.action = '/processos/criar/';
-
-    // Mostra o modal
     document.getElementById('modalProcessoOverlay').style.display = 'flex';
 }
 
 function editarProcesso(processoId) {
-    // 1. Faz uma requisição GET para buscar os dados do processo
     fetch(`/api/processos/${processoId}/obter/`)
         .then(response => {
             if(!response.ok) throw new Error("Erro ao buscar dados do processo");
             return response.json();
         })
         .then(data => {
-            // 2. Preenche o formulário com os dados retornados
             document.getElementById('id_nome').value = data.nome || '';
             document.getElementById('id_protocolo').value = data.protocolo || '';
             document.getElementById('id_descricao').value = data.descricao || '';
@@ -149,16 +130,11 @@ function editarProcesso(processoId) {
                 document.getElementById('id_data_vencimento').value = data.data_vencimento;
             }
 
-            // 3. Ajusta o visual do Modal
             document.getElementById('modalTitle').childNodes[0].nodeValue = data.nome || '';
             const badge = document.getElementById('modalProtocoloBadge');
             badge.innerText = `Protocolo: ${data.protocolo}`;
             badge.style.display = 'inline-block';
-
-            // 4. Muda a action do formulário para editar
             document.getElementById('formProcesso').action = `/processos/editar/${processoId}/`;
-
-            // 5. Mostra o modal
             document.getElementById('modalProcessoOverlay').style.display = 'flex';
         })
         .catch(error => {
@@ -167,10 +143,90 @@ function editarProcesso(processoId) {
         })
 }
 
-// ===== CONTROLE DO MODAL DE PROCESSOS =====
-// Função para abirr/fechar o menu do card específico
+// ===== CONTROLE DO MENU DROPDOWN =====
 function toggleMenuOpcoes(event, processoId){
     event.preventDefault();
-    event.stopPropagation(); // Evita que o evento de drag dispare acidentalmente 
-    // continua à partir daqui
+    event.stopPropagation(); 
+
+    document.querySelectorAll('.dropdown-conteudo').forEach(menu => {
+        if(menu.id !== `dropdown-${processoId}`){
+            menu.classList.remove('mostrar');
+        }
+    })
+
+    const menuAtual = document.getElementById(`dropdown-${processoId}`);
+    if(menuAtual){
+        menuAtual.classList.toggle('mostrar');
+    }
+}
+
+window.addEventListener('click', function(event){
+    if(!event.target.closest('.dropdown-opcoes-card')){
+        document.querySelectorAll('.dropdown-conteudo').forEach(menu => {
+            menu.classList.remove('mostrar');
+        });
+    }
+});
+
+// ===== FUNÇÕES DE DELEÇÃO =====
+function softDeleteProcesso(event, processoId){
+    event.preventDefault();
+
+    if(!confirm("Deseja realmente EXCLUIR este processo? Ele será movido para a coluna de Excluídos.")){
+        return; 
+    }
+
+    fetch(`/processos/${processoId}/deletar/`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Agora vai funcionar!
+        }
+    })
+    .then(response => {
+        if(response.ok){
+            const card = document.querySelector(`.processo-card[data-processo-id="${processoId}"]`);
+            const colunaExcluidos = document.querySelector('.kanban-column[data-status="EXCLUIDO"] .cards-container');
+
+            if(card && colunaExcluidos){
+                colunaExcluidos.appendChild(card);
+                card.dataset.status = 'EXCLUIDO';
+                document.getElementById(`dropdown-${processoId}`).classList.remove('mostrar');
+            } else if(card){
+                card.remove();
+            }
+        }else{
+            alert("Erro ao excluir o processo.");
+        }
+    })
+    .catch(error => console.error("Erro na requisição:", error));
+}
+
+function hardDeleteProcesso(event, processoId){
+    event.preventDefault();
+
+    if(!confirm("ATENÇÃO: Você está prestes a APAGAR DEFINITIVIAMENTE este processo o branco e dados. Esta ação é irreversível. Continuar?")){
+        return; 
+    }
+
+    fetch(`/processos/${processoId}/apagar/`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Agora vai funcionar!
+        }
+    })
+    .then(response => {
+        if(response.ok){
+            const card = document.querySelector(`.processo-card[data-processo-id="${processoId}"]`);
+            if(card){
+                card.remove();
+            }
+        }else if(response.status === 403){
+            alert("Você não tem permissão para realizar esta ação.");
+        }else{
+            alert("Erro ao tentar apagar o processo do banco de dados.");
+        }
+    })
+    .catch(error => console.error("Erro na requisição:", error));
 }
