@@ -27,8 +27,8 @@ main.conteudo_principal {
 
 /* Colunas do Kanban */
 .kanban-column {
-    min-width: 380px; /* Largura fixa para forçar o scroll horizontal quando houver muitas */
-    max-width: 380px;
+    min-width: 300px; /* Largura fixa para forçar o scroll horizontal quando houver muitas */
+    max-width: 300px;
     display: flex;
     flex-direction: column;
     border-radius: 15px;
@@ -180,10 +180,10 @@ main.conteudo_principal {
 
 /* Área interna do card com os espaçamentos */
 .card-content {
-    padding: 20px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Espaço entre as linhas do card */
+    gap: 5px; /* Espaço entre as linhas do card */
 }
 
 /* Cabeçalho do Card (Título e Botões) */
@@ -195,7 +195,7 @@ main.conteudo_principal {
 }
 
 .card-titulo {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 800;
     color: var(--light-font2);
 }
@@ -225,7 +225,7 @@ main.conteudo_principal {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--light-font);
 }
@@ -244,7 +244,7 @@ main.conteudo_principal {
     color: #ffffff;
     padding: 4px 8px;
     border-radius: 6px;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 700;
     width: fit-content;
     margin-top: 5px;
@@ -257,7 +257,7 @@ main.conteudo_principal {
     color: #ffffff;
     text-align: center;
     padding: 8px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 700;
     width: 100%;
 }
