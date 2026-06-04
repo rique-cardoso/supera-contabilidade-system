@@ -57,6 +57,16 @@ main.conteudo_principal {
     opacity: .8;
 }
 
+.btn-add{
+    background-color: transparent;
+    border: none;
+    font-size: 1.1em;
+}
+
+.btn-add:hover{
+    opacity: 0.8;
+}
+
 .titulo-status{
     padding: 2px 8px;
     border-radius: 20px;
