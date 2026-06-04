@@ -73,5 +73,13 @@
     <span class="card-protocolo">Protocolo: {{ processo.protocolo }}</span>
   </div>
 
-  <div class="card-prazo">vencendo em {{ processo.dias_para_vencer }} dias</div>
+  {% if processo.status == "EXCLUIDO" %}
+    <div class="card-prazo" style="text-decoration: line-through;">vencendo em {{ processo.dias_para_vencer }} dias</div>
+  {% elif processo.status == "VENCIDO" %}
+    <div class="card-prazo">vencido há {{ processo.dias_para_vencer }} dias</div>
+  {% elif processo.status == "CONCLUIDO" %}
+    <div class="card-prazo">concluído há {{ processo.dias_para_vencer }} dias</div>
+  {% else %}
+    <div class="card-prazo">vencendo em {{ processo.dias_para_vencer }} dias</div>
+  {% endif %}
 </div>

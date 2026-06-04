@@ -202,7 +202,7 @@ class Processo(models.Model):
 
     def dias_para_vencer(self):
         """Retorna dias até vencimento (útil para template)"""
-        return (self.data_vencimento - date.today()).days
+        return abs((self.data_vencimento - date.today()).days)
 
     @property
     def data_vencimento_formatada(self):
