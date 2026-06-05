@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from datetime import date
-from processos.models import Processo
+from processos.models import Processo, FaseProcesso, ItemChecklist, Vistoria, Anexo
 from clientes.models import Empresa
 from core.models import Usuario
 # Create your views here.
@@ -37,6 +37,473 @@ def gerenciamento_processos(request):
     }
 
     return render(request, 'gerenciamento_processos.html', context)
+
+@login_required
+@require_http_methods(["GET"])
+def obter_processo_completo(request, processo_id):
+    """
+    Retorna todos os dados para popular o modal completo.
+    Usa select_related/prefetch_related para evitar N+1 queries.
+    """
+
+    processo = get_object_or_404(
+        Processo.objects.select_related(
+            'empresa__cliente', # Empresa e seu Cliente num único JOIN
+            'empresa__endereco', # E o Endereço da Empresa
+        ).prefetch_related(
+            'responsaveis', # M2M: usuários responsáveis
+            'fases__itens', # FaseProcesso e seus ItemChecklist
+            'vistorias', # Vistorias do processo
+            'processos_relacionados', # M2M: processos relacionados
+        ),
+        id=processo_id
+    )
+
+    # Serializar fases e seus itens
+    fases_data = []
+    for fase in processo.fases.order_by('ordem'):
+        itens_data = [
+            {
+                'id': item.id,
+                'nome': item.nome,
+                'is_concluido': item.is_concluido,
+                'data_conclusao': (
+                    item.data_conclusao.strftime('%d/%m/%Y') if item.data_conclusao else None
+                ),
+            }
+            for item in fase.itens.all()
+        ]
+        fases_data.append({
+            'id': fase.id,
+            'nome': fase.nome,
+            'is_geral': fase.is_geral,
+            'ordem': fase.ordem,
+            'itens': itens_data,
+        })
+    
+    # Serializar vistorias
+    vistorias_data = [
+        {
+            'id': v.id,
+            'data_hora': v.data_hora.strftime('%d/%m/%Y %H:%M'),
+            # Formato para input type="datetime-local" no HTML
+            'data_hora_input': v.data_hora.strftime('%Y-%m-%dT%H:%M'),
+            'local': v.local,
+            'status': v.status,
+            'status_display': v.get_status_display(),
+            'observacoes': v.observacoes or '',
+        }
+        for v in processo.vistorias.all()
+    ]
+
+    # Serializar responsáveis
+    responsaveis_data = [
+        {
+            'id': u.id,
+            'nome': u.get_full_name() or u.username,
+        }
+        for u in processo.responsaveis.all()
+    ]
+
+    # Serializar empresa e cliente
+    empresa_data = None
+    cliente_data = None
+    if processo.empresa:
+        empresa = processo.empresa
+        empresa_data = {
+            'id': empresa.id,
+            'nome_empresa': empresa.nome_empresa,
+            'cnpj': empresa.cnpj,
+            'cnae': empresa.cnae,
+            'endereco': None,
+        }
+
+        # Endereço é opcional (OneToOne pode não existir)
+        try:
+            e = empresa.endereco
+            empresa_data['endereco'] = {
+                'logradouro': e.logradouro,
+                'numero': e.numero,
+                'complemento': e.complemento or '',
+                'bairro': e.bairro,
+                'cidade': e.cidade,
+                'estado': e.estado,
+                'cep': e.cep,
+                # Versão resumida para o card (truncar no css)
+                'resumo': f"{e.logradouro}, {e.numero} - {e.bairro}",
+                # Versão completa para o sub-modal
+                'completo': (
+                    f"{e.logradouro}, {e.numero}"
+                    + (f", {e.complemento}" if e.complemento else '')
+                    + f" — {e.bairro}, {e.cidade}/{e.estado} — CEP {e.cep}"
+                ),
+            }
+        except Exception:
+            pass # Sem endereço cadastrado
+
+        cliente = empresa.cliente
+        cliente_data = {
+            'nome_responsavel': cliente.nome_responsavel,
+            'cpf': cliente.cpf,
+            'telefone': cliente.telefone,
+            'email': cliente.email,
+        }
+
+    # Serializar processos relacionados
+    relacionados_data = [
+        {
+            'id': p.id,
+            'nome': p.nome,
+            'protocolo': p.protocolo,
+            'status': p.status,
+            'status_display': p.get_status_display(),
+        }
+        for p in processo.processos_relacionados.all()
+    ]
+
+    return JsonResponse({
+        'id': processo.id, 
+        'nome': processo.nome, 
+        'protocolo': processo.protocolo, 
+        'descricao': processo.descricao or '', 
+        'orgao': processo.orgao, 
+        'orgao_display': processo.get_orgao_display(), 
+        'categoria': processo.categoria, 
+        'categoria_display': processo.get_categoria_display(), 
+        'status': processo.status, 
+        'status_display': processo.get_status_display(), 
+        'empresa_id': processo.empresa.id if processo.empresa else '', 
+        'data_vencimento': ( 
+            processo.data_vencimento.strftime('%Y-%m-%d') if processo.data_vencimento else '' 
+        ), 
+        'data_vencimento_formatada': processo.data_vencimento_formatada, 
+        'fases': fases_data, 
+        'vistorias': vistorias_data, 
+        'responsaveis': responsaveis_data, 
+        'empresa': empresa_data, 
+        'cliente': cliente_data, 
+        'processos_relacionados': relacionados_data,
+    })
+
+# ────────────────────────────────────────────────────────────── 
+
+# CHECKLIST 
+
+# ────────────────────────────────────────────────────────────── 
+@login_required
+@require_http_methods(["POST"])
+def toggle_item_checklist(request, item_id):
+    """
+    Alterna conclusão de um item. Post sem body = simples toggle.
+    O model.save() já cuida de registrar/limpar data_conclusao.
+    """
+
+    item = get_object_or_404(ItemChecklist, id=item_id)
+    item.is_concluido = not item.is_concluido
+    item.save()
+
+    return JsonResponse({
+        'id': item.id,
+        'is_concluido': item.is_concluido,
+        'data_conclusao': (
+            item.data_conclusao.strftime('%d/%m/%Y') if item.data_conclusao else None
+        )
+    })
+
+@login_required
+@require_http_methods(["POST"])
+def criar_item_checklist(request, fase_id):
+    """
+    Adiciona um item customizado a uma fase existente.
+    """
+    import json
+    fase = get_object_or_404(FaseProcesso, id=fase_id)
+
+    try:
+        data = json.loads(request.body)
+        nome = data.get('nome', '').strip()
+
+        if not nome:
+            return JsonResponse({'erro': 'Nome do item é obrigatório'}, status=400)
+        
+        item = ItemChecklist.objects.create(fase=fase, nome=nome)
+
+        return JsonResponse({
+            'id': item.id,
+            'nome': item.nome,
+            'is_concluido': False,
+        }, status=201)
+    except json.JSONDecodeError:
+        return JsonResponse({'erro': 'JSON inválido no corpo da requisição'}, status=400)
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=400)
+    
+@login_required
+@require_http_methods(["POST"])
+def upload_anexo(request, item_id):
+    """
+    Upload de arquivo para um item de checklist.
+    ATENÇÃO: Este endpoint recebe multipart/form-data, NÃO JSON.
+    A validação de extensão já está no Anexo.save() do model.
+    """
+    item = get_object_or_404(ItemChecklist, id=item_id)
+    arquivo = request.FILES.get('arquivo')
+
+    if not arquivo:
+        return JsonResponse({'erro': 'Nenhum arquivo enviado'}, status=400)
+    try:
+        anexo = Anexo(item_checklist=item, arquivo=arquivo)
+        anexo.save() # Dispara a validação de extensão do model
+
+        return JsonResponse({
+            'id': anexo.id,
+            'nome_original': anexo.nome_original,
+            'tipo_arquivo': anexo.tipo_arquivo,
+            'url': request.build.absolute_uri(anexo.arquivo.url),
+        }, status=201)
+    except ValueError as e:
+        # O Anexo.save() lança ValueErro para extensão inválida
+        return JsonResponse({'erro': str(e)}, status=400)
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=400)
+
+# ────────────────────────────────────────────────────────────── 
+
+# VISTORIAS 
+
+# ────────────────────────────────────────────────────────────── 
+@login_required
+@require_http_methods(["POST"])
+def criar_vistoria(request, processo_id):
+    """
+    Cria uma nova vistoria para o processo.
+    Recebe data_hora no formato ISO: '2025-06-05T14:30'
+    """
+    import json
+    from django.utils.dateparse import parse_datetime
+    from django.utils.timezone import make_aware
+
+    processo = get_object_or_404(Processo, id=processo_id)
+
+    try:
+        data = json.loads(request.body)
+        data_hora_str = data.get('data_hora', '').strip()
+        local = data.get('local', '').strip()
+
+        if not data_hora_str or not local:
+            return JsonResponse(
+                {'erro': 'Os campos data/hora e local são obrigatórios'},
+                status=400
+            )
+        
+        # parse_datetime converte a string ISO para objeto datetime
+        data_hora = parse_datetime(data_hora_str)
+        if data_hora is None:
+            return JsonResponse({'erro': 'Formato de data/hora inválido'}, status=400)
+        
+        # make_aware adiciona timezone (necessário pois USE_TZ=True no settings)
+        if data_hora.tzinfo is None:
+            data_hora = make_aware(data_hora)
+
+        vistoria = Vistoria.objects.create(
+            processo=processo,
+            data_hora=data_hora,
+            local=local,
+            observacoes=data.get('observacoes', ''),
+        )
+        return JsonResponse({
+            'id': vistoria.id,
+            'data_hora': vistoria.data_hora.strftime('%d/%m/%Y %H:%M'),
+            'data_hora_input': vistoria.data_hora.strftime('%Y-%m-%dT%H:%M'),
+            'local': vistoria.local,
+            'status': vistoria.status,
+            'status_display': vistoria.get_status_display(),
+        }, status=201)
+    except json.JSONDecodeError:
+        return JsonResponse({'erro': 'JSON inválido'}, status=400)
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=400)
+    
+@login_required
+@require_http_methods(["PATCH"])
+def atualizar_status_vistoria(request, vistoria_id):
+    """
+    Atualiza apenas o status de uma vistoria (REALIZADA, CANCELADA, ADIADA).
+    Usa update_fields=['status'] para não recalcular outros campos.
+    """
+    import json
+    vistoria = get_object_or_404(Vistoria, id=vistoria_id)
+
+    try:
+        data = json.loads(request.body)
+        novo_status = data.get('status')
+        # Validação dinãmica: lê as opções diretamente do model
+        status_validos = [s[0] for s in Vistoria.STATUS_CHOICES]
+        if novo_status not in status_validos:
+            return JsonResponse(
+                {'erro': f'Status inválido. Valores aceitos: {status_validos}'},
+                status=400
+            )
+        
+        vistoria.status = novo_status
+        vistoria.save(update_fields=['status']) # Atualiza só este campo no BD
+
+        return JsonResponse({
+            'id': vistoria.id,
+            'status': vistoria.status,
+            'status_display': vistoria.get_status_display(),
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'erro': 'JSON inválido'}, status=400)
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=400)
+
+# ────────────────────────────────────────────────────────────── 
+
+# PROCESSOS RELACIONADOS 
+
+# ────────────────────────────────────────────────────────────── 
+@login_required
+@require_http_methods(["POST"])
+def adicionar_processo_relacionado(request, processo_id):
+    """
+    Vincula outro processo a este via M2M.
+    Arelação é assimétrica: vincular A->B não vincula B->A automaticamente.
+    """
+    import json
+    processo = get_object_or_404(Processo, id=processo_id)
+
+    try:
+        data = json.loads(request.body)
+        relacionado_id = data.get('relacionado_id')
+        
+        if not relacionado_id:
+            return JsonResponse({'erro': 'ID do processo é obrigatório'}, status=400)
+        
+        if int(relacionado_id) == processo_id:
+            return JsonResponse(
+                {'erro': 'Um processo não pode ser relacionado a si mesmo'},
+                status=400
+            )
+        
+        # Verifica se já está vinculado para evitar duplicata
+        if processo.processos_relacionados.filter(id=relacionado_id).exists():
+            return JsonResponse({'erro': 'Processo já está vinculado'}, status=400)
+        
+        relacionado = get_object_or_404(Processo, id=relacionado_id)
+        processo.processos_relacionados.add(relacionado)
+
+        return JsonResponse({
+            'id': relacionado.id,
+            'nome': relacionado.nome,
+            'protocolo': relacionado.protocolo,
+            'status': relacionado.status,
+            'status_display': relacionado.get_status_display(),
+        })
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'erro': 'Dados inválidos'}, status=400)
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=400)
+    
+@login_required
+@require_http_methods(["DELETE"])
+def remover_processo_relacionado(request, processo_id, relacionado_id):
+    """
+    Desvincula um processo relacionado.
+    O M2M .remove() é seguro: não lança erro se a relação não existe.
+    """
+
+    processo = get_object_or_404(Processo, id=processo_id)
+    relacionado = get_object_or_404(Processo, id=relacionado_id)
+
+    processo.processos_relacionados.remove(relacionado)
+    
+    return JsonResponse({'mensagem': 'Processos desvinculado com sucesso'})
+
+# ────────────────────────────────────────────────────────────── 
+
+# EMPRESA E BUSCA 
+
+# ────────────────────────────────────────────────────────────── 
+@login_required
+@require_http_methods(["GET"])
+def obter_empresa_detalhes(request, empresa_id):
+    """
+    Retorna empresa + cliente quando o usuário muda a empresa no formulário.
+    Chamado dinamicamente para atualizar os cards de Empresa e Cliente.
+    """
+    from clientes.models import Empresa as EmpresaModel
+
+    empresa = get_object_or_404(
+        EmpresaModel.objects.select_related('cliente', 'endereco'),
+        id=empresa_id
+    )
+
+    data = {
+        'id': empresa.id,
+        'nome_empresa': empresa.nome_empresa,
+        'cnpj': empresa.cnpj,
+        'cnae': empresa.cnae,
+        'endereco': None,
+        'cliente': {
+            'nome_responsavel': empresa.cliente.nome_responsavel,
+            'cpf': empresa.cliente.cpf,
+            'telefone': empresa.cliente.telefone,
+            'email': empresa.cliente.email,
+        },
+    }
+    
+    try:
+        e = empresa.endereco
+        data['endereco'] = {
+            'resumo': f"{e.logradouro}, {e.numero} - {e.bairro}",
+            'completo': (
+                f"{e.logradouro}, {e.numero}"
+                + (f", {e.complemento}" if e.complemento else '')
+                + f"— {e.bairro}, {e.cidade}/{e.estado} — CEP {e.cep}"
+            ),
+        }
+    except Exception:
+        pass
+
+    return JsonResponse(data)
+
+@login_required
+@require_http_methods(["GET"])
+def buscar_processos(request):
+    """
+    Busca processos por nome ou protocolo para o campo de processos relacionados.
+    Parametros GET:
+        - q: termo de busca
+        - excluir_id: ID do processo atual (para não aparecer na lista)
+    Retorna no máximo 15 resultados para performance.
+    """
+    from django.db.models import Q
+
+    q = request.GET.get('q', '').strip()
+    excluir_id = request.GET.get('excluir_id')
+
+    processos = Processo.objects.exclude(status='EXCLUIDO').select_related('empresa')
+
+    if q:
+        processos = processos.filter(
+            Q(nome__icontains=q) | Q(protocolo__icontains=q)
+        )
+    processos = processos[:15]
+    
+    return JsonResponse({
+        'processos': [
+            {
+                'id': p.id,
+                'nome': p.nome,
+                'protocolo': p.protocolo,
+                'status': p.status,
+                'empresa': p.empresa.nome_empresa if p.empresa else '',
+            }
+            for p in processos
+        ]
+    })
+
 
 @login_required
 @require_http_methods(["POST"])

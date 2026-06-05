@@ -136,3 +136,7 @@ LOGIN_REDIRECT_URL = 'gerenciamento_processos'
 
 # Rota para onde o usuário vai após clicar em "Sair/Logout"
 LOGOUT_REDIRECT_URL = 'login'
+
+# Arquivos enviados por usuários (uploads)
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
