@@ -391,7 +391,8 @@ main.conteudo_principal {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    width: 95%;
+    width: 90%;
+    height: 95%;
     max-width: 1660px;
   }
   .container_btn-close{
@@ -410,6 +411,7 @@ main.conteudo_principal {
   }
   .container_title_prot{
     display: flex;
+    gap: 35px;
   }
   .form-grid {
     display: grid;
