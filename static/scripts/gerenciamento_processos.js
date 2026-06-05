@@ -310,3 +310,20 @@ function hardDeleteProcesso(event, processoId){
     })
     .catch(error => console.error("Erro na requisição:", error));
 }
+
+// ===== FILTRAGEM E BUSCA =====
+const btns_filtro = document.querySelectorAll('.btn-filtro');
+
+// Filtragem Prefeitura
+btns_filtro[0].addEventListener('click', e => {
+    // Formatação visual do botão após clicar
+    btns_filtro[0].classList.add('btn-filtro__actived');
+    btns_filtro[1].classList.remove('btn-filtro__actived');
+})
+
+// Filtragem Bombeiro
+btns_filtro[1].addEventListener('click', e => {
+    // Formatação visual do botão após clicar
+    btns_filtro[1].classList.add('btn-filtro__actived');
+    btns_filtro[0].classList.remove('btn-filtro__actived');
+})
