@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função matemática auxiliar para descobrir em qual vão do Kanban o mouse está
     function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.processo-card:not(.dragging)')];
+        const draggableElements = [...container.querySelectorAll('.processo-card:not(.dragging):not(.oculto)')];
 
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
@@ -314,16 +314,44 @@ function hardDeleteProcesso(event, processoId){
 // ===== FILTRAGEM E BUSCA =====
 const btns_filtro = document.querySelectorAll('.btn-filtro');
 
-// Filtragem Prefeitura
-btns_filtro[0].addEventListener('click', e => {
-    // Formatação visual do botão após clicar
-    btns_filtro[0].classList.add('btn-filtro__actived');
-    btns_filtro[1].classList.remove('btn-filtro__actived');
-})
+// 1. Função central que executa a filtragem
+function aplicarFiltro() {
+    // Descobre qual botão está com a classe ativada
+    const botaoAtivo = document.querySelector('.btn-filtro.btn-filtro__actived');
+    if (!botaoAtivo) return;
 
-// Filtragem Bombeiro
-btns_filtro[1].addEventListener('click', e => {
-    // Formatação visual do botão após clicar
-    btns_filtro[1].classList.add('btn-filtro__actived');
-    btns_filtro[0].classList.remove('btn-filtro__actived');
-})
+    // Pega o nome do órgão (ex: "PREFEITURA") e transforma em maiúsculo por segurança
+    const orgaoSelecionado = botaoAtivo.dataset.filtro.toUpperCase();
+    
+    // Seleciona todos os cards do quadro
+    const todos_cards = document.querySelectorAll('.processo-card');
+
+    todos_cards.forEach(card => {
+        // Pega a informação do card
+        const orgaoCard = card.dataset.orgao ? card.dataset.orgao.toUpperCase() : '';
+        
+        // Se bater com o botão ativo, remove a classe oculto. Se não, adiciona a classe.
+        if (orgaoCard === orgaoSelecionado) {
+            card.classList.remove('oculto');
+        } else {
+            card.classList.add('oculto');
+        }
+    });
+}
+
+// 2. Adiciona o evento de clique em cada botão
+btns_filtro.forEach(botaoClicado => {
+    botaoClicado.addEventListener('click', () => {
+        // Alterna o visual (desativa todos, ativa o clicado)
+        btns_filtro.forEach(btn => btn.classList.remove('btn-filtro__actived'));
+        botaoClicado.classList.add('btn-filtro__actived');
+        
+        // Dispara a filtragem
+        aplicarFiltro();
+    });
+});
+
+// 3. Aplica o filtro inicial ao carregar a tela
+// Como o botão "Prefeitura" já vem com a classe actived no HTML, 
+// ele já iniciará a tela mostrando apenas a Prefeitura.
+document.addEventListener('DOMContentLoaded', aplicarFiltro);

@@ -13,8 +13,6 @@ main.conteudo_principal {
     justify-content: center;
     gap: 40px;
     margin: 0 0 20px 0;
-    
-    border: 1px solid red;
 }
 
 .btn-filtro{
@@ -213,6 +211,9 @@ main.conteudo_principal {
 .processo-card.dragging {
     opacity: 0.5;
     transform: scale(0.95);
+}
+.processo-card.oculto{
+    display: none !important;
 }
 
 /* Área interna do card com os espaçamentos */

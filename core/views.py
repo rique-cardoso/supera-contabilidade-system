@@ -25,15 +25,6 @@ def gerenciamento_processos(request):
     processos_vencendo = Processo.objects.filter(status='VENCENDO').select_related('empresa__cliente')
     processos_vencidos = Processo.objects.filter(status='VENCIDO').select_related('empresa__cliente')
     processos_concluidos = Processo.objects.filter(status='CONCLUIDO').select_related('empresa__cliente')
-
-    # Aplicar filtros (opcional)
-    orgao = request.GET.get('orgao')
-    if orgao:
-        processos_excluidos = processos_excluidos.filter(orgao=orgao)
-        processos_ativos = processos_ativos.filter(orgao=orgao)
-        processos_vencendo = processos_vencendo.filter(orgao=orgao)
-        processos_vencidos = processos_vencidos.filter(orgao=orgao)
-        processos_concluidos = processos_concluidos.filter(orgao=orgao)
     
     context = {
         'processos_excluidos': processos_excluidos,
