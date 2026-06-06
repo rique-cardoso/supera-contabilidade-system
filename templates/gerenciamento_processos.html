@@ -10,8 +10,14 @@
 
 {% block content %}
 <aside class="filtro_processos">
-        <button class="btn-filtro btn-filtro__actived" data-filtro="PREFEITURA">Prefeitura</button>
-        <button class="btn-filtro" data-filtro="BOMBEIROS">Bombeiros</button>
+        <div class="container_filtros">
+            <button class="btn-filtro btn-filtro__actived" data-filtro="PREFEITURA">Prefeitura</button>
+            <button class="btn-filtro" data-filtro="BOMBEIROS">Bombeiros</button>
+        </div>
+        <div class="container_empresas_clientes">
+            <button class="btn-criar-empresa_cliente">Cliente</button>
+            <button class="btn-criar-empresa_cliente">Empresa</button>
+        </div>
 </aside>
 <div class="kanban-wrapper">
     
