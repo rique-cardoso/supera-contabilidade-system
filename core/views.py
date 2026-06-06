@@ -562,7 +562,11 @@ def editar_processo(request, processo_id):
         # Permitir edição de data de vencimento (RF11)
         data_vencimento_str = request.POST.get('data_vencimento')
         if data_vencimento_str:
-            processo.data_vencimento = data_vencimento_str
+            try:
+                processo.data_vencimento = date.fromisoformat(data_vencimento_str)
+            except ValueError:
+                return JsonResponse({'erro': 'Formato de data inválido. Utilize o formato AAAA-MM-DD.'}, status=400)
+                
         
         empresa_id = request.POST.get('empresa')
         if empresa_id:
