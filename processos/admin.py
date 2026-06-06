@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Processo, FaseProcesso, ItemChecklist, Anexo, Vistoria, Taxa
+from .models import Processo, FaseProcesso, Anexo, Vistoria, Taxa
 
 @admin.register(Processo)
 class ProcessoAdmin(admin.ModelAdmin):
@@ -13,22 +13,25 @@ class ProcessoAdmin(admin.ModelAdmin):
 
 @admin.register(FaseProcesso)
 class FaseProcessoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'processo', 'is_geral', 'ordem')
-    list_filter = ('is_geral',)
+    # Adicionamos 'is_concluido' para visualizar rapidamente pelo painel
+    list_display = ('nome', 'processo', 'is_geral', 'is_concluido', 'ordem')
+    
+    # Agora podemos filtrar também por fases concluídas ou não concluídas
+    list_filter = ('is_geral', 'is_concluido')
     search_fields = ('nome', 'processo__protocolo')
-    ordering = ('processo', 'ordem')
-
-@admin.register(ItemChecklist)
-class ItemChecklistAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'fase', 'is_concluido', 'data_conclusao')
-    list_filter = ('is_concluido',)
-    search_fields = ('nome', 'fase__nome', 'fase__processo__protocolo')
+    ordering = ('processo', 'ordem', 'data_criacao')
+    
+    # Impede que as datas de rastreamento automáticas sejam editadas manualmente
+    readonly_fields = ('data_conclusao', 'data_criacao')
 
 @admin.register(Anexo)
 class AnexoAdmin(admin.ModelAdmin):
-    list_display = ('nome_original', 'item_checklist', 'tipo_arquivo', 'data_upload')
+    # Atualizado de 'item_checklist' para 'fase'
+    list_display = ('nome_original', 'fase', 'tipo_arquivo', 'data_upload')
     list_filter = ('tipo_arquivo',)
-    search_fields = ('nome_original', 'item_checklist__nome')
+    
+    # Atualizado para buscar pelo nome da fase e também pelo protocolo do processo
+    search_fields = ('nome_original', 'fase__nome', 'fase__processo__protocolo')
 
 @admin.register(Vistoria)
 class VistoriaAdmin(admin.ModelAdmin):

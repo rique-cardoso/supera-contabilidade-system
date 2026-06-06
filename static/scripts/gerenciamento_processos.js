@@ -485,9 +485,8 @@ function limparCardCliente() {
         '<tr><td colspan="2" class="modal-empty-state">Selecione uma empresa acima.</td></tr>';
 }
 
-
 /* ══════════════════════════════════════════
-   7. FASES DO PROCESSO
+   7. FASES DO PROCESSO (Refatorado)
    ══════════════════════════════════════════ */
 
 function popularFases(fases) {
@@ -499,80 +498,63 @@ function popularFases(fases) {
         return;
     }
 
-    // Fases específicas do órgão primeiro, documentação geral por último
+    // Ordena: Específicas primeiro, gerais (documentação) depois
     const ordenadas = [
         ...fases.filter(f => !f.is_geral),
         ...fases.filter(f =>  f.is_geral),
     ];
 
-    ordenadas.forEach(fase => container.appendChild(criarGrupoFase(fase)));
-}
+    // Renderiza cada fase diretamente como um item
+    ordenadas.forEach(fase => container.appendChild(criarItemFase(fase)));
 
-function criarGrupoFase(fase) {
-    const grupo = document.createElement('div');
-    grupo.className = 'fase-grupo';
-
-    const titulo = document.createElement('div');
-    titulo.className = 'fase-titulo';
-    titulo.textContent = fase.nome;
-
-    const listaItens = document.createElement('div');
-    listaItens.className = 'fase-itens';
-    listaItens.dataset.faseId = fase.id;
-
-    fase.itens.forEach(item => listaItens.appendChild(criarItemChecklist(item)));
-
+    // Adiciona o botão de criar nova fase ao final da lista
     const btnAdicionar = clonarTemplate('tplBtnAdicionarItem');
-    btnAdicionar.dataset.faseId = fase.id;
     btnAdicionar.addEventListener('click', () => {
-        mostrarInputNovoItem(fase.id, btnAdicionar, listaItens);
+        mostrarInputNovaFase(btnAdicionar, container);
     });
-
-    grupo.appendChild(titulo);
-    grupo.appendChild(listaItens);
-    grupo.appendChild(btnAdicionar);
-    return grupo;
+    container.appendChild(btnAdicionar);
 }
 
-function criarItemChecklist(item) {
+function criarItemFase(fase) {
+    // Reutilizamos o template tplItemChecklist, mas alimentamos com os dados da Fase
     const el = clonarTemplate('tplItemChecklist');
-    el.dataset.itemId = item.id;
+    el.dataset.faseId = fase.id;
 
     const checkbox = el.querySelector('.checklist-checkbox');
-    checkbox.checked = item.is_concluido;
-    if (item.is_concluido) el.classList.add('concluido');
+    checkbox.checked = fase.is_concluido;
+    if (fase.is_concluido) el.classList.add('concluido');
 
-    el.querySelector('.checklist-item-nome').textContent = item.nome;
+    el.querySelector('.checklist-item-nome').textContent = fase.nome;
 
-    checkbox.addEventListener('change', () => toggleItemChecklist(item.id, checkbox, el));
+    checkbox.addEventListener('change', () => toggleFaseProcesso(fase.id, checkbox, el));
 
+    // Botão de anexo agora passa o ID e Nome da Fase
     el.querySelector('.btn-item-anexo').addEventListener('click', () => {
-        abrirSubModalAnexos(item.id, item.nome);
+        abrirSubModalAnexos(fase.id, fase.nome);
     });
 
     return el;
 }
 
-function toggleItemChecklist(itemId, checkbox, itemEl) {
-    fetchJSON(`/api/itens/${itemId}/toggle/`, { method: 'POST' })
+function toggleFaseProcesso(faseId, checkbox, el) {
+    fetchJSON(`/api/fases/${faseId}/toggle/`, { method: 'POST' })
         .then(data => {
             checkbox.checked = data.is_concluido;
-            itemEl.classList.toggle('concluido', data.is_concluido);
+            el.classList.toggle('concluido', data.is_concluido);
         })
         .catch(err => {
-            // Reverte o checkbox visualmente se a request falhar
-            checkbox.checked = !checkbox.checked;
-            alert(`Erro ao atualizar item: ${err.message}`);
+            checkbox.checked = !checkbox.checked; // Reverte visualmente
+            alert(`Erro ao atualizar fase: ${err.message}`);
         });
 }
 
-function mostrarInputNovoItem(faseId, btnEl, listaItens) {
+function mostrarInputNovaFase(btnEl, container) {
     btnEl.style.display = 'none';
 
     const inputContainer = clonarTemplate('tplInputNovoItem');
     const input = inputContainer.querySelector('.input-novo-item');
 
-    const confirmar = () => salvarNovoItem(faseId, input, inputContainer, listaItens, btnEl);
+    const confirmar = () => salvarNovaFase(input, inputContainer, container, btnEl);
     const cancelar  = () => { inputContainer.remove(); btnEl.style.display = ''; };
 
     inputContainer.querySelector('.btn-confirmar-novo-item').addEventListener('click', confirmar);
@@ -583,26 +565,27 @@ function mostrarInputNovoItem(faseId, btnEl, listaItens) {
         if (e.key === 'Escape') { cancelar(); }
     });
 
-    btnEl.parentNode.insertBefore(inputContainer, btnEl);
+    container.insertBefore(inputContainer, btnEl);
     input.focus();
 }
 
-function salvarNovoItem(faseId, input, inputContainer, listaItens, btnEl) {
+function salvarNovaFase(input, inputContainer, container, btnEl) {
     const nome = input.value.trim();
     if (!nome) { input.focus(); return; }
 
-    fetchJSON(`/api/fases/${faseId}/itens/criar/`, {
+    const processoId = estado.processoId; // Pega o ID do processo aberto no modal
+
+    fetchJSON(`/api/processos/${processoId}/fases/criar/`, {
         method: 'POST',
         body: JSON.stringify({ nome }),
     })
         .then(data => {
-            listaItens.appendChild(criarItemChecklist(data));
+            container.insertBefore(criarItemFase(data), btnEl);
             inputContainer.remove();
             btnEl.style.display = '';
         })
-        .catch(err => alert(`Erro ao criar item: ${err.message}`));
+        .catch(err => alert(`Erro ao criar nova fase: ${err.message}`));
 }
-
 
 /* ══════════════════════════════════════════
    8. VISTORIAS

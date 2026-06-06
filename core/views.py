@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from datetime import date
-from processos.models import Processo, FaseProcesso, ItemChecklist, Vistoria, Anexo
+from processos.models import Processo, FaseProcesso, Vistoria, Anexo
 from clientes.models import Empresa
 from core.models import Usuario
 # Create your views here.
@@ -52,34 +52,27 @@ def obter_processo_completo(request, processo_id):
             'empresa__endereco', # E o Endereço da Empresa
         ).prefetch_related(
             'responsaveis', # M2M: usuários responsáveis
-            'fases__itens', # FaseProcesso e seus ItemChecklist
+            'fases', # AQUI: Removido o 'fases__itens', pois a Fase agora é o próprio item
             'vistorias', # Vistorias do processo
             'processos_relacionados', # M2M: processos relacionados
         ),
         id=processo_id
     )
 
-    # Serializar fases e seus itens
-    fases_data = []
-    for fase in processo.fases.order_by('ordem'):
-        itens_data = [
-            {
-                'id': item.id,
-                'nome': item.nome,
-                'is_concluido': item.is_concluido,
-                'data_conclusao': (
-                    item.data_conclusao.strftime('%d/%m/%Y') if item.data_conclusao else None
-                ),
-            }
-            for item in fase.itens.all()
-        ]
-        fases_data.append({
+    # AQUI: Serializar fases diretamente (achatadas, sem itens filhos)
+    fases_data = [
+        {
             'id': fase.id,
             'nome': fase.nome,
             'is_geral': fase.is_geral,
             'ordem': fase.ordem,
-            'itens': itens_data,
-        })
+            'is_concluido': fase.is_concluido,
+            'data_conclusao': (
+                fase.data_conclusao.strftime('%d/%m/%Y') if fase.data_conclusao else None
+            ),
+        }
+        for fase in processo.fases.order_by('ordem', 'data_criacao')
+    ]
     
     # Serializar vistorias
     vistorias_data = [
@@ -187,85 +180,72 @@ def obter_processo_completo(request, processo_id):
 
 # ────────────────────────────────────────────────────────────── 
 
-# CHECKLIST 
+# FASES PROCESSO 
 
 # ────────────────────────────────────────────────────────────── 
 @login_required
 @require_http_methods(["POST"])
-def toggle_item_checklist(request, item_id):
-    """
-    Alterna conclusão de um item. Post sem body = simples toggle.
-    O model.save() já cuida de registrar/limpar data_conclusao.
-    """
-
-    item = get_object_or_404(ItemChecklist, id=item_id)
-    item.is_concluido = not item.is_concluido
-    item.save()
+def toggle_fase_processo(request, fase_id): # Renomeado
+    fase = get_object_or_404(FaseProcesso, id=fase_id)
+    fase.is_concluido = not fase.is_concluido
+    fase.save()
 
     return JsonResponse({
-        'id': item.id,
-        'is_concluido': item.is_concluido,
-        'data_conclusao': (
-            item.data_conclusao.strftime('%d/%m/%Y') if item.data_conclusao else None
-        )
+        'id': fase.id,
+        'is_concluido': fase.is_concluido,
+        'data_conclusao': fase.data_conclusao.strftime('%d/%m/%Y') if fase.data_conclusao else None
     })
 
 @login_required
 @require_http_methods(["POST"])
-def criar_item_checklist(request, fase_id):
-    """
-    Adiciona um item customizado a uma fase existente.
-    """
+def criar_fase_personalizada(request, processo_id): # Renomeado, agora recebe o ID do processo
     import json
-    fase = get_object_or_404(FaseProcesso, id=fase_id)
+    processo = get_object_or_404(Processo, id=processo_id)
 
     try:
         data = json.loads(request.body)
         nome = data.get('nome', '').strip()
 
         if not nome:
-            return JsonResponse({'erro': 'Nome do item é obrigatório'}, status=400)
+            return JsonResponse({'erro': 'Nome é obrigatório'}, status=400)
         
-        item = ItemChecklist.objects.create(fase=fase, nome=nome)
+        # Cria a nova fase direto no processo
+        fase = FaseProcesso.objects.create(
+            processo=processo, 
+            nome=nome, 
+            is_geral=False, 
+            ordem=99 # Ordem alta para ir pro final da lista
+        )
 
         return JsonResponse({
-            'id': item.id,
-            'nome': item.nome,
+            'id': fase.id,
+            'nome': fase.nome,
             'is_concluido': False,
+            'is_geral': fase.is_geral
         }, status=201)
-    except json.JSONDecodeError:
-        return JsonResponse({'erro': 'JSON inválido no corpo da requisição'}, status=400)
     except Exception as e:
         return JsonResponse({'erro': str(e)}, status=400)
     
 @login_required
 @require_http_methods(["POST"])
-def upload_anexo(request, item_id):
-    """
-    Upload de arquivo para um item de checklist.
-    ATENÇÃO: Este endpoint recebe multipart/form-data, NÃO JSON.
-    A validação de extensão já está no Anexo.save() do model.
-    """
-    item = get_object_or_404(ItemChecklist, id=item_id)
+def upload_anexo(request, fase_id): # Mudou para fase_id
+    fase = get_object_or_404(FaseProcesso, id=fase_id)
     arquivo = request.FILES.get('arquivo')
 
     if not arquivo:
         return JsonResponse({'erro': 'Nenhum arquivo enviado'}, status=400)
     try:
-        anexo = Anexo(item_checklist=item, arquivo=arquivo)
-        anexo.save() # Dispara a validação de extensão do model
+        anexo = Anexo(fase=fase, arquivo=arquivo) # Atualizado aqui
+        anexo.save()
 
         return JsonResponse({
             'id': anexo.id,
             'nome_original': anexo.nome_original,
             'tipo_arquivo': anexo.tipo_arquivo,
-            'url': request.build.absolute_uri(anexo.arquivo.url),
+            'url': request.build_absolute_uri(anexo.arquivo.url),
         }, status=201)
-    except ValueError as e:
-        # O Anexo.save() lança ValueErro para extensão inválida
-        return JsonResponse({'erro': str(e)}, status=400)
     except Exception as e:
-        return JsonResponse({'erro': str(e)}, status=400)
+         return JsonResponse({'erro': str(e)}, status=400)
 
 # ────────────────────────────────────────────────────────────── 
 
@@ -662,14 +642,10 @@ def atualizar_status_processo(request, processo_id):
 
 @login_required
 @require_http_methods(["GET"])
-def listar_anexos(request, item_id):
-    """
-    Retorna os anexos já enviados para um item de checklist.
-    Chamado ao abrir o sub-modal de anexos.
-    """
-    item = get_object_or_404(ItemChecklist, id=item_id)
+def listar_anexos(request, fase_id): # Mudou para fase_id
+    fase = get_object_or_404(FaseProcesso, id=fase_id)
     return JsonResponse({
-        'item_nome': item.nome,
+        'item_nome': fase.nome,
         'anexos': [
             {
                 'id': a.id,
@@ -677,7 +653,7 @@ def listar_anexos(request, item_id):
                 'tipo_arquivo': a.tipo_arquivo,
                 'url': request.build_absolute_uri(a.arquivo.url),
             }
-            for a in item.anexos.all()
+            for a in fase.anexos.all() # Atualizado
         ]
     })
 

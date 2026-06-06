@@ -173,17 +173,7 @@ class Processo(models.Model):
             )
     
     def _criar_checklist_geral(self):
-        """
-        Cria checklist geral padrão com itens obrigatórios (RF17)
-        """
-        # Criar ou obter a fase geral
-        fase_geral, created = FaseProcesso.objects.get_or_create(
-            processo=self,
-            is_geral=True,
-            defaults={'nome': 'Documentação Geral', 'ordem': 0}
-        )
-
-        # Itens padrão (RF17)
+        """ Cria fases de documentação geral padrão (RF17) """
         itens_padrao = [
             'Contrato Social',
             'Comprovante de Endereço Atualizado',
@@ -193,11 +183,16 @@ class Processo(models.Model):
             'Documento do Responsável',
         ]
 
-        for nome in itens_padrao:
-            ItemChecklist.objects.get_or_create(
-                fase=fase_geral,
+        # Criamos cada documento como uma fase direto
+        for i, nome in enumerate(itens_padrao):
+            FaseProcesso.objects.get_or_create(
+                processo=self,
                 nome=nome,
-                defaults={'is_concluido': False}
+                defaults={
+                    'is_geral': True, 
+                    'ordem': 100 + i, # Garante que fiquem no final
+                    'is_concluido': False
+                }
             )
 
     def dias_para_vencer(self):
@@ -241,7 +236,7 @@ class Processo(models.Model):
         
 class FaseProcesso(models.Model):
     """
-    Model de Fase - organiza checklist por fase (RF16, RF19, RF20)
+    Model de Fase - Cada fase atua como um item de checklist direto (RF16, RF19, RF20)
     """
     processo = models.ForeignKey(
         Processo,
@@ -251,60 +246,24 @@ class FaseProcesso(models.Model):
 
     nome = models.CharField(max_length=255)
     is_geral = models.BooleanField(default=False) # True = documentação geral
-    ordem = models.IntegerField(default=0) # RF16: ordenação visual
+    ordem = models.IntegerField(default=0)
+    
+    # Campos trazidos da antiga ItemChecklist
+    is_concluido = models.BooleanField(default=False)
+    data_conclusao = models.DateTimeField(null=True, blank=True)
+    data_criacao = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Fase do Processo"
         verbose_name_plural = "Fases dos Processos"
-        ordering = ['processo', 'ordem']
+        ordering = ['processo', 'ordem', 'data_criacao']
         unique_together = [['processo', 'nome']]
     
     def __str__(self):
         return f"{self.processo.protocolo} - {self.nome}"
     
-    def esta_concluida(self):
-        """Verifica se todos os itens estão concluídos"""
-
-        itens = self.itens.all()
-
-        if not itens.exists():
-            return False
-        
-        return all(item.is_concluido for item in itens)
-    
-class ItemChecklist(models.Model):
-    """
-    Model de Item do Checklist - item dentro de uma fase (RF16, RF18, RF23)
-    """
-    fase = models.ForeignKey(
-        FaseProcesso,
-        on_delete=models.CASCADE,
-        related_name='itens'
-    )
-    
-    nome = models.CharField(max_length=255)
-    is_concluido = models.BooleanField(default=False)
-
-    #RF23: rastreamento de conclusão
-
-    data_conclusao = models.DateTimeField(null=True, blank=True)
-
-    # Auditoria
-    data_criacao = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name = "Item do Checklist"
-        verbose_name_plural = "Itens do Checklist"
-        ordering = ['fase', 'data_criacao']
-    
-    def __str__(self):
-        return f"{self.fase.nome} - {self.nome}"
-    
     def save(self, *args, **kwargs):
-        """
-        RF23: Rastrear quando item foi concluído
-        """
-
+        """ Rastrear quando a fase foi concluída """
         if self.is_concluido and not self.data_conclusao:
             self.data_conclusao = timezone.now()
         elif not self.is_concluido:
@@ -313,12 +272,13 @@ class ItemChecklist(models.Model):
 
 class Anexo(models.Model):
     """
-    Model de Anexo - arquivos em itens de checklist (RF22)
+    Model de Anexo - arquivos anexados direto na Fase (RF22)
     """
     EXTENSOES_PERMITIDAS = ['png', 'jpg', 'jpeg', 'pdf']
 
-    item_checklist = models.ForeignKey(
-        ItemChecklist,
+    # Mudou de item_checklist para fase
+    fase = models.ForeignKey(
+        FaseProcesso,
         on_delete=models.CASCADE,
         related_name='anexos'
     )
@@ -326,8 +286,6 @@ class Anexo(models.Model):
     arquivo = models.FileField(upload_to='anexos/%Y/%m/')
     nome_original = models.CharField(max_length=255, blank=True)
     data_upload = models.DateTimeField(auto_now_add=True)
-
-    # Validação de tipo
     tipo_arquivo = models.CharField(max_length=10, blank=True)
 
     class Meta:
@@ -336,24 +294,17 @@ class Anexo(models.Model):
         ordering = ['-data_upload']
     
     def __str__(self):
-        return f"Anexo - {self.item_checklist.nome}"
+        return f"Anexo - {self.fase.nome}"
     
     def save(self, *args, **kwargs):
-        """
-        RF22: Validar formato de arquivo
-        """
-
         if self.arquivo:
-            # Extrair extensão
             extensao = self.arquivo.name.split('.')[-1].lower()
             if extensao not in self.EXTENSOES_PERMITIDAS:
                 raise ValueError(
-                    f"Formato '{extensao}' não permitido. "
-                    f"Use: {', '.join(self.EXTENSOES_PERMITIDAS)}"
+                    f"Formato '{extensao}' não permitido. Use: {', '.join(self.EXTENSOES_PERMITIDAS)}"
                 )
             self.tipo_arquivo = extensao
             self.nome_original = self.arquivo.name
-
         super().save(*args, **kwargs)
     
 class Vistoria(models.Model):

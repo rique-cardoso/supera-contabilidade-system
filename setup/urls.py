@@ -13,8 +13,8 @@ from core.views import (
     obter_processo,
     apagar_processo,
     obter_processo_completo,
-    toggle_item_checklist,
-    criar_item_checklist,
+    toggle_fase_processo,
+    criar_fase_personalizada,
     upload_anexo,
     criar_vistoria,
     atualizar_status_vistoria,
@@ -53,16 +53,14 @@ urlpatterns = [
     path('api/processos/<int:processo_id>/vistorias/criar/', criar_vistoria, name='criar_vistoria'),
     path('api/vistorias/<int:vistoria_id>/status/', atualizar_status_vistoria, name='atualizar_status_vistoria'),
 
-    # API: Checklist
-    path('api/fases/<int:fase_id>/itens/criar/', criar_item_checklist, name='criar_item_checklist'),
-    path('api/itens/<int:item_id>/toggle/', toggle_item_checklist, name='toggle_item_checklist'),
-    path('api/itens/<int:item_id>/anexos/', upload_anexo, name='upload_anexo'),
+    # API: Fases (Substituindo os antigos itens)
+    path('api/processos/<int:processo_id>/fases/criar/', criar_fase_personalizada, name='criar_fase_personalizada'),
+    path('api/fases/<int:fase_id>/toggle/', toggle_fase_processo, name='toggle_fase_processo'),
+    path('api/fases/<int:fase_id>/anexos/', upload_anexo, name='upload_anexo'),
+    path('api/fases/<int:fase_id>/listar-anexos/', listar_anexos, name='listar_anexos'),
 
     # API: Empresa
     path('api/empresas/<int:empresa_id>/detalhes/', obter_empresa_detalhes, name='obter_empresa_detalhes'),
-
-    # API: Anexos
-    path('api/itens/<int:item_id>/listar-anexos/', listar_anexos, name='listar_anexos'),
 
     # Rotas de autenticação
     path('login/', auth_views.LoginView.as_view(
