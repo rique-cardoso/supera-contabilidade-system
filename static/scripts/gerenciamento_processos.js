@@ -844,7 +844,7 @@ function fecharSubModalAnexos() {
 }
 
 function carregarAnexos(itemId) {
-    fetchJSON(`/api/itens/${itemId}/listar-anexos/`)
+    fetchJSON(`/api/fases/${itemId}/listar-anexos/`)
         .then(data => renderizarListaAnexos(data.anexos))
         .catch(() => {
             document.getElementById('listaAnexos').innerHTML =
@@ -892,7 +892,7 @@ function inicializarUploadAnexo(itemId) {
 
         // fetchJSON detecta FormData e NÃO define Content-Type,
         // deixando o browser definir corretamente com o boundary do multipart
-        fetchJSON(`/api/itens/${itemId}/anexos/`, { method: 'POST', body: formData })
+        fetchJSON(`/api/fases/${itemId}/anexos/`, { method: 'POST', body: formData })
             .then(() => carregarAnexos(itemId)) // Recarrega a lista após upload bem-sucedido
             .catch(err => alert(`Erro no upload: ${err.message}`));
     });

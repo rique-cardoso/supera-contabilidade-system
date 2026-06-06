@@ -106,8 +106,10 @@ class Processo(models.Model):
         3. Criar fases automáticas na primeira criação (RF19, RF20)
         4. Criar checklist geral padrão (RF17)
         """
+        is_novo = self.pk is None 
+        
         # Se é novo processo, calcular data de vencimento
-        if not self.pk:
+        if is_novo:
             if self.orgao == 'BOMBEIROS':
                 # +1 ano da data de criação (RF11)
                 self.data_vencimento = date.today() + timedelta(days=365)
@@ -118,12 +120,13 @@ class Processo(models.Model):
         # Atualizar status automaticamente baseado em data (RF15)
         self._atualizar_status_automatico()
 
+        # Salva no banco de dados (neste momento self.pk ganha um valor)
         super().save(*args, **kwargs)
 
-        # Criar fases e checklist geral apenas na primeira criação
-        if not self.pk:
+        if is_novo:
             self._criar_fases_automaticas()
             self._criar_checklist_geral()
+
     def _atualizar_status_automatico(self):
         """
         Atualiza status para VENCENDO (30 dias antes) ou VENCIDO (após data). (RF15)
@@ -164,16 +167,21 @@ class Processo(models.Model):
         else:
             return
         
+        # Usamos o novo modelo simplificado FaseProcesso
         for nome, ordem in nomes_fases:
             FaseProcesso.objects.create(
                 processo=self,
                 nome=nome,
                 ordem=ordem,
-                is_geral=False
+                is_geral=False,
+                is_concluido=False
             )
     
     def _criar_checklist_geral(self):
-        """ Cria fases de documentação geral padrão (RF17) """
+        """
+        Cria fases de documentação geral padrão (RF17)
+        """
+        # Itens padrão viram fases com flag is_geral=True
         itens_padrao = [
             'Contrato Social',
             'Comprovante de Endereço Atualizado',
@@ -183,14 +191,13 @@ class Processo(models.Model):
             'Documento do Responsável',
         ]
 
-        # Criamos cada documento como uma fase direto
         for i, nome in enumerate(itens_padrao):
             FaseProcesso.objects.get_or_create(
                 processo=self,
                 nome=nome,
                 defaults={
                     'is_geral': True, 
-                    'ordem': 100 + i, # Garante que fiquem no final
+                    'ordem': 100 + i, # 100+ garante que sempre fiquem no fim da lista
                     'is_concluido': False
                 }
             )
