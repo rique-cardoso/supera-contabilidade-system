@@ -656,6 +656,27 @@ def atualizar_status_processo(request, processo_id):
     except Exception as e:
         return JsonResponse({'erro': str(e)}, status=400)
 
+@login_required
+@require_http_methods(["GET"])
+def listar_anexos(request, item_id):
+    """
+    Retorna os anexos já enviados para um item de checklist.
+    Chamado ao abrir o sub-modal de anexos.
+    """
+    item = get_object_or_404(ItemChecklist, id=item_id)
+    return JsonResponse({
+        'item_nome': item.nome,
+        'anexos': [
+            {
+                'id': a.id,
+                'nome_original': a.nome_original,
+                'tipo_arquivo': a.tipo_arquivo,
+                'url': request.build_absolute_uri(a.arquivo.url),
+            }
+            for a in item.anexos.all()
+        ]
+    })
+
 # Rota teste -> apenas para visualizar o arquivo base.html para desenvolvimento
 def base(request):
     return render(request, 'base.html')

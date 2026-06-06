@@ -22,6 +22,7 @@ from core.views import (
     remover_processo_relacionado,
     obter_empresa_detalhes,
     buscar_processos,
+    listar_anexos,
     base
 )
 
@@ -59,6 +60,9 @@ urlpatterns = [
 
     # API: Empresa
     path('api/empresas/<int:empresa_id>/detalhes/', obter_empresa_detalhes, name='obter_empresa_detalhes'),
+
+    # API: Anexos
+    path('api/itens/<int:item_id>/listar-anexos/', listar_anexos, name='listar_anexos'),
 
     # Rotas de autenticação
     path('login/', auth_views.LoginView.as_view(

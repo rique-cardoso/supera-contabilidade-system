@@ -1,0 +1,1194 @@
+@charset "UTF-8";
+
+/* ================================================================
+   MODAL DE PROCESSO — Estilos Completos
+   Arquivo: static/css/modal_processo.css
+   ================================================================ */
+
+
+/* ────────────────────────────────────────
+   OVERLAY E CONTAINER PRINCIPAL
+   ──────────────────────────────────────── */
+
+/*
+  align-items: flex-start + margin: auto no .modal-content
+  é a técnica correta para modais longos:
+  - Conteúdo curto: fica centralizado verticalmente (margin: auto resolve)
+  - Conteúdo longo: começa do topo e o overlay rola (overflow-y: auto)
+  - Melhor que align-items: center que "corta" o modal por cima
+*/
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 1200px;
+    padding: 28px 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+    margin: auto; /* garante centralização vertical quando o conteúdo é menor que o viewport */
+}
+
+
+/* ────────────────────────────────────────
+   HEADER DO MODAL
+   ──────────────────────────────────────── */
+
+.modal-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Linha 1: título + badge de protocolo + botão X */
+.modal-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.modal-title-group h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--light-font2);
+    line-height: 1.2;
+    margin: 0;
+}
+
+/* Badge de protocolo — herda o azul escuro do sistema */
+.badge-protocolo {
+    background: var(--main);
+    color: #ffffff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+}
+
+/* Botão fechar (X) */
+.btn-close-modal {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--icons);
+    font-size: 1.3rem;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.btn-close-modal:hover {
+    color: var(--light-font2);
+    background: var(--area-background);
+}
+
+/* Linha 2: badges informativos de status / categoria / data */
+.modal-info-badges {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.modal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: var(--area-background);
+    color: var(--light-font);
+}
+
+/*
+  Cores do badge de status via data-status.
+  O CSS lê o atributo e aplica a cor certa — sem JS e sem classes extras.
+  O mesmo padrão já usado nos cards do Kanban.
+*/
+.badge-status[data-status="ATIVO"]     { color: var(--st-ativo);     background: var(--st-ativo-background); }
+.badge-status[data-status="VENCENDO"]  { color: var(--st-vencendo);  background: var(--st-vencendo-background); }
+.badge-status[data-status="VENCIDO"]   { color: var(--st-vencido);   background: var(--st-vencido-background); }
+.badge-status[data-status="CONCLUIDO"] { color: var(--st-concluido); background: var(--st-concluido-background); }
+.badge-status[data-status="EXCLUIDO"]  { color: var(--light-font2);  background: var(--area-background); }
+
+
+/* ────────────────────────────────────────
+   TEXTAREA DE DESCRIÇÃO
+   ──────────────────────────────────────── */
+
+.modal-descricao {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--contour-form);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: var(--light-font2);
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s;
+    background: #fafafa;
+}
+
+.modal-descricao:focus {
+    outline: none;
+    border-color: var(--main);
+    background: #fff;
+}
+
+
+/* ────────────────────────────────────────
+   GRADE PRINCIPAL — 3 colunas
+   [Campos do Formulário | Fases | Vistorias]
+   ──────────────────────────────────────── */
+
+.modal-main-grid {
+    display: grid;
+    /* Coluna 1 levemente maior pois tem sub-grade de 2 colunas internamente */
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 0;
+    align-items: start;
+}
+
+/* Separador visual entre as 3 colunas usando padding + border-right */
+.modal-col {
+    padding: 0 24px;
+    border-right: 1px solid #f0f0f0;
+}
+
+.modal-col:first-child {
+    padding-left: 0;
+}
+
+.modal-col:last-child {
+    padding-right: 0;
+    border-right: none;
+}
+
+/* Título de seção das colunas 2 e 3 */
+.col-section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--light-font);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.col-section-title i {
+    color: var(--secondary);
+}
+
+
+/* ────────────────────────────────────────
+   CAMPOS DO FORMULÁRIO — Coluna 1
+   ──────────────────────────────────────── */
+
+/* Sub-grade de 2 colunas dentro da coluna 1 */
+.form-fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: relative; /* indispensável para posicionar os dropdowns filhos */
+}
+
+/* Ocupa as duas colunas da sub-grade (Responsáveis, Busca de Relacionado) */
+.form-group-full {
+    grid-column: span 2;
+}
+
+.form-group label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--light-font);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select {
+    width: 100%;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--contour-form);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: var(--light-font2);
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--main);
+    box-shadow: 0 0 0 3px var(--main-background);
+}
+
+.form-hint {
+    font-size: 0.72rem;
+    color: var(--icons);
+    margin-top: 2px;
+}
+
+
+/* ────────────────────────────────────────
+   CHIPS DE RESPONSÁVEIS
+   ──────────────────────────────────────── */
+
+/*
+  O campo visual "parece" um input, mas é uma div.
+  Por dentro: lista de chips + input de busca invisível.
+  O select[multiple] oculto é quem envia os dados no submit.
+*/
+.chips-field {
+    min-height: 36px;
+    border: 1px solid var(--contour-form);
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    cursor: text;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Simula o :focus do input quando o search interno recebe foco */
+.chips-field:focus-within {
+    border-color: var(--main);
+    box-shadow: 0 0 0 3px var(--main-background);
+}
+
+.chips-list {
+    display: contents; /* os chips ficam no mesmo flex do container */
+}
+
+/* Chip individual de um responsável selecionado */
+.chip-responsavel {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--main);
+    color: #ffffff;
+    padding: 3px 8px 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    animation: chipEntrar 0.15s ease;
+}
+
+@keyframes chipEntrar {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+.chip-remover {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.65);
+    padding: 0;
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+    line-height: 1;
+}
+
+.chip-remover:hover {
+    color: #ffffff;
+}
+
+/* Input de digitação dentro do campo de chips */
+.chips-search-input {
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 100px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--light-font2);
+    background: transparent;
+    padding: 2px 0;
+}
+
+/* Dropdown de sugestões — chips e busca de processo usam a mesma base */
+.chips-dropdown,
+.busca-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 500;
+    background: #ffffff;
+    border: 1px solid var(--contour-form);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.chips-dropdown-item,
+.busca-dropdown-item {
+    padding: 9px 14px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--light-font2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.15s;
+    gap: 8px;
+}
+
+.chips-dropdown-item:hover,
+.busca-dropdown-item:hover {
+    background: var(--main-background);
+}
+
+/* Item já selecionado fica esmaecido e mostra check-mark via CSS */
+.chips-dropdown-item.selecionado {
+    color: var(--icons);
+    pointer-events: none; /* impede deseleção pelo dropdown */
+}
+
+.chips-dropdown-item.selecionado::after {
+    content: '✓';
+    color: var(--st-concluido);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+/* Sub-informação da empresa nos resultados de busca de processo */
+.busca-dropdown-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.busca-dropdown-item-empresa {
+    font-size: 0.72rem;
+    color: var(--icons);
+}
+
+/* Campo de busca de processos relacionados */
+.busca-field {
+    position: relative;
+}
+
+.busca-input {
+    width: 100%;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--contour-form);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: var(--light-font2);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.busca-input:focus {
+    outline: none;
+    border-color: var(--main);
+    box-shadow: 0 0 0 3px var(--main-background);
+}
+
+
+/* ────────────────────────────────────────
+   FASES DO PROCESSO — Coluna 2
+   ──────────────────────────────────────── */
+
+.fases-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+/* Estiliza a scrollbar da coluna de fases (webkit) */
+.fases-container::-webkit-scrollbar,
+.vistorias-container::-webkit-scrollbar,
+.relacionados-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.fases-container::-webkit-scrollbar-thumb,
+.vistorias-container::-webkit-scrollbar-thumb,
+.relacionados-list::-webkit-scrollbar-thumb {
+    background: var(--contour-form);
+    border-radius: 10px;
+}
+
+/* Bloco de uma fase (título + seus itens) */
+.fase-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Título da fase — linha horizontal sutil abaixo */
+.fase-titulo {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--main);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-bottom: 5px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--main-background);
+}
+
+.fase-itens {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+/* Linha de item do checklist */
+.checklist-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    gap: 6px;
+}
+
+.checklist-item:hover {
+    background: var(--area-background);
+}
+
+.checklist-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--light-font2);
+}
+
+/* Checkbox com cor de conclusão */
+.checklist-checkbox {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--st-concluido);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checklist-item-nome {
+    transition: color 0.2s, text-decoration 0.2s;
+}
+
+/* Estado visual quando marcado como concluído */
+.checklist-item.concluido .checklist-item-nome {
+    text-decoration: line-through;
+    color: var(--icons);
+}
+
+/* Ícone de clipe para abrir os anexos do item */
+.btn-item-anexo {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--icons);
+    font-size: 0.8rem;
+    padding: 3px 5px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-item-anexo:hover {
+    color: var(--main);
+    background: var(--main-background);
+}
+
+/* Botão "adicionar item" — tracejado para indicar ação de criação */
+.btn-adicionar-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 12px;
+    margin-top: 6px;
+    background: transparent;
+    border: 1px dashed var(--contour-form);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: var(--icons);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-adicionar-item:hover {
+    border-color: var(--main);
+    color: var(--main);
+    background: var(--main-background);
+}
+
+/* Input inline para digitar o nome do novo item */
+.novo-item-inline {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    padding: 0 4px;
+}
+
+.input-novo-item {
+    flex: 1;
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid var(--main);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    color: var(--light-font2);
+    outline: none;
+}
+
+.input-novo-item:focus {
+    box-shadow: 0 0 0 2px var(--main-background);
+}
+
+
+/* ────────────────────────────────────────
+   VISTORIAS — Coluna 3
+   ──────────────────────────────────────── */
+
+.vistorias-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 10px;
+}
+
+/* Card de vistoria individual */
+.vistoria-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid var(--contour-form);
+    border-radius: 8px;
+    background: #fff;
+    gap: 8px;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+/* Cor de borda e fundo mudam dinamicamente por data-status */
+.vistoria-item[data-status="REALIZADA"] {
+    border-color: var(--st-concluido);
+    background: var(--st-concluido-background);
+}
+
+.vistoria-item[data-status="CANCELADA"] {
+    border-color: var(--st-vencido);
+    background: var(--st-vencido-background);
+    opacity: 0.72;
+}
+
+.vistoria-item[data-status="ADIADA"] {
+    border-color: var(--st-vencendo);
+    background: var(--st-vencendo-background);
+}
+
+.vistoria-dados {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0; /* permite text-overflow funcionar dentro de flex */
+}
+
+.vistoria-local {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--light-font2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vistoria-data-hora {
+    font-size: 0.75rem;
+    color: var(--icons);
+}
+
+/* Risca o texto quando cancelada */
+.vistoria-item[data-status="CANCELADA"] .vistoria-local,
+.vistoria-item[data-status="CANCELADA"] .vistoria-data-hora {
+    text-decoration: line-through;
+}
+
+.vistoria-acoes {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* Checkbox que marca a vistoria como Realizada */
+.vistoria-checkbox-realizada {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--st-concluido);
+    cursor: pointer;
+}
+
+.btn-cancelar-vistoria-item {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--icons);
+    font-size: 0.9rem;
+    padding: 3px 5px;
+    border-radius: 4px;
+    transition: color 0.2s;
+}
+
+.btn-cancelar-vistoria-item:hover {
+    color: var(--st-vencido);
+}
+
+/* Formulário inline para criar nova vistoria */
+.form-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--main-background);
+    border-radius: 8px;
+    background: #fafafa;
+    margin-top: 8px;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.input-inline,
+.textarea-inline {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--contour-form);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--light-font2);
+    transition: border-color 0.2s;
+}
+
+.input-inline:focus,
+.textarea-inline:focus {
+    outline: none;
+    border-color: var(--main);
+}
+
+.textarea-inline {
+    resize: none;
+}
+
+.form-inline-acoes {
+    display: flex;
+    gap: 8px;
+}
+
+
+/* ────────────────────────────────────────
+   BOTÕES INLINE — confirmar / cancelar
+   Reutilizados em checklist e vistorias
+   ──────────────────────────────────────── */
+
+.btn-inline-confirmar {
+    padding: 6px 14px;
+    background: var(--secondary);
+    color: var(--main);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-inline-confirmar:hover {
+    opacity: 0.85;
+}
+
+.btn-inline-cancelar {
+    padding: 6px 12px;
+    background: transparent;
+    color: var(--icons);
+    border: 1px solid var(--contour-form);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-inline-cancelar:hover {
+    border-color: var(--light-font2);
+    color: var(--light-font2);
+}
+
+
+/* ────────────────────────────────────────
+   GRADE INFERIOR — [Empresa | Cliente | Relacionados]
+   ──────────────────────────────────────── */
+
+.modal-info-grid {
+    display: grid;
+    /* Empresa e Cliente com peso igual; Relacionados levemente maior */
+    grid-template-columns: 1fr 1fr 1.2fr;
+    gap: 16px;
+    align-items: start;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* Base compartilhada dos 3 cards */
+.info-card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--contour-form);
+}
+
+/* Cabeçalho do card */
+.info-card-header {
+    padding: 9px 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-bottom: 1px solid transparent;
+}
+
+/* Card Empresa — tons de verde limão, refletindo o --secondary do sistema */
+.info-card-empresa {
+    border-color: var(--secondary);
+}
+
+.info-card-empresa .info-card-header {
+    background: #eef4d0;
+    color: var(--main);
+    border-bottom-color: var(--secondary);
+}
+
+/* Card Cliente — cinza frio neutro */
+.info-card-cliente {
+    border-color: #b0bec5;
+}
+
+.info-card-cliente .info-card-header {
+    background: #e8ecee;
+    color: var(--light-font2);
+    border-bottom-color: #b0bec5;
+}
+
+/* Card Relacionados — branco com borda neutra */
+.info-card-relacionados {
+    border-color: var(--contour-form);
+}
+
+.info-card-relacionados .info-card-header {
+    background: var(--area-background);
+    color: var(--light-font2);
+    border-bottom-color: var(--contour-form);
+}
+
+/* Tabela interna dos cards Empresa e Cliente */
+.info-card-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.info-card-row td {
+    padding: 6px 14px;
+    vertical-align: middle;
+    font-size: 0.8rem;
+}
+
+.info-card-label {
+    width: 38%;
+    color: var(--icons);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.info-card-value {
+    color: var(--light-font2);
+    font-weight: 500;
+}
+
+/* Valor de Endereço — clicável para abrir sub-modal */
+.info-card-value.clicavel {
+    cursor: pointer;
+    color: var(--st-ativo);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+    display: block;
+    text-decoration: underline dotted;
+    transition: color 0.2s;
+}
+
+.info-card-value.clicavel:hover {
+    color: var(--main);
+}
+
+/* Linhas zebradas para legibilidade */
+.info-card-empresa .info-card-row:nth-child(even) td {
+    background: #f5f9e8;
+}
+
+.info-card-cliente .info-card-row:nth-child(even) td {
+    background: #f0f2f3;
+}
+
+
+/* ────────────────────────────────────────
+   MINI-CARDS DE PROCESSOS RELACIONADOS
+   ──────────────────────────────────────── */
+
+.relacionados-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Mini-card de um processo relacionado */
+.relacionado-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border: 1px solid var(--contour-form);
+    border-radius: 8px;
+    background: #fafafa;
+    gap: 8px;
+    transition: border-color 0.2s;
+}
+
+.relacionado-card:hover {
+    border-color: var(--main);
+}
+
+.relacionado-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.relacionado-nome {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--light-font2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Badge de protocolo colorido pelo status do processo relacionado.
+   Mesmo padrão data-status dos cards do Kanban. */
+.relacionado-protocolo-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    color: #ffffff;
+    width: fit-content;
+}
+
+.relacionado-card[data-status="ATIVO"]     .relacionado-protocolo-badge { background: var(--st-ativo); }
+.relacionado-card[data-status="VENCENDO"]  .relacionado-protocolo-badge { background: var(--st-vencendo); }
+.relacionado-card[data-status="VENCIDO"]   .relacionado-protocolo-badge { background: var(--st-vencido); }
+.relacionado-card[data-status="CONCLUIDO"] .relacionado-protocolo-badge { background: var(--st-concluido); }
+.relacionado-card[data-status="EXCLUIDO"]  .relacionado-protocolo-badge { background: var(--light-font2); }
+
+.relacionado-acoes {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.btn-editar-relacionado,
+.btn-desvincular-relacionado {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+}
+
+.btn-editar-relacionado {
+    color: var(--st-ativo);
+}
+
+.btn-editar-relacionado:hover {
+    background: var(--st-ativo-background);
+}
+
+.btn-desvincular-relacionado {
+    color: var(--icons);
+}
+
+.btn-desvincular-relacionado:hover {
+    color: var(--st-vencido);
+    background: var(--st-vencido-background);
+}
+
+
+/* ────────────────────────────────────────
+   FOOTER DO MODAL
+   ──────────────────────────────────────── */
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.btn-submit-modal {
+    background: var(--secondary);
+    color: var(--main);
+    border: none;
+    padding: 12px 64px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn-submit-modal:hover {
+    opacity: 0.88;
+}
+
+.btn-submit-modal:active {
+    transform: scale(0.98);
+}
+
+
+/* ────────────────────────────────────────
+   ESTADO VAZIO — sem dados para exibir
+   ──────────────────────────────────────── */
+
+.modal-empty-state {
+    font-size: 0.8rem;
+    color: var(--icons);
+    text-align: center;
+    padding: 14px;
+    font-style: italic;
+}
+
+
+/* ────────────────────────────────────────
+   SUB-MODAIS
+   z-index 2000 > z-index 1000 do modal principal
+   ──────────────────────────────────────── */
+
+.sub-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.sub-modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sub-modal-sm { width: 420px; max-width: 90vw; }
+.sub-modal-md { width: 560px; max-width: 90vw; }
+
+.sub-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    background: var(--area-background);
+}
+
+.sub-modal-header h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--light-font2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.sub-modal-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Endereço completo exibido em parágrafo */
+.endereco-completo-texto {
+    font-size: 0.95rem;
+    color: var(--light-font2);
+    line-height: 1.8;
+    background: var(--area-background);
+    padding: 16px;
+    border-radius: 8px;
+}
+
+/* Lista de arquivos já anexados */
+.lista-anexos {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.anexo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--contour-form);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: #fafafa;
+}
+
+.anexo-item-icone {
+    color: var(--main);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.anexo-item-nome {
+    flex: 1;
+    color: var(--light-font2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.anexo-item-link {
+    color: var(--st-ativo);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.anexo-item-link:hover {
+    color: var(--main);
+}
+
+/* Área de upload estilo drag-and-drop */
+.upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 24px;
+    border: 2px dashed var(--contour-form);
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--icons);
+    font-size: 0.85rem;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.upload-area:hover {
+    border-color: var(--main);
+    background: var(--main-background);
+    color: var(--main);
+}
+
+.upload-area i {
+    font-size: 1.8rem;
+    margin-bottom: 4px;
+}
+
+.upload-area small {
+    font-size: 0.72rem;
+    opacity: 0.75;
+}

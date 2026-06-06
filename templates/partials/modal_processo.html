@@ -1,97 +1,503 @@
-<div id="modalProcessoOverlay" class="modal-overlay" style="display: none">
+{% comment %} templates/partials/modal_processo.html {% endcomment %}
+
+{% comment %} ============================================================
+   MODAL PRINCIPAL: Criação / Edição de Processo
+   data-processo-id é preenchido pelo JS antes de exibir
+   ============================================================ {% endcomment %}
+<div id="modalProcessoOverlay"
+     class="modal-overlay"
+     style="display: none"
+     data-processo-id="">
+
   <div class="modal-content">
+
+    {% comment %} ─── CABEÇALHO ─── {% endcomment %}
     <div class="modal-header">
-      <div class="container_btn-close">
-        <button onclick="fecharModalProcesso()" class="btn-close">
+
+      {% comment %} Linha 1: Título + Badge de Protocolo + Botão Fechar {% endcomment %}
+      <div class="modal-header-top">
+        <div class="modal-title-group">
+          <h2 id="modalTitle">Novo Processo</h2>
+          <span id="modalProtocoloBadge"
+                class="badge-protocolo"
+                style="display: none"></span>
+        </div>
+        <button type="button"
+                class="btn-close-modal"
+                onclick="fecharModalProcesso()"
+                title="Fechar">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-      <div class="container_title_prot">
-        <h2 id="modalTitle">
-          {{ processo.nome }}
-        </h2>
-        <div class="container-protocol">
-          <span
-            id="modalProtocoloBadge"
-            class="badge-protocolo"
-            style="display: none"
-          ></span>
-        </div>
-      </div>
-    </div>
 
+      {% comment %} Linha 2: Badges de Status / Categoria / Data — visível só na edição {% endcomment %}
+      <div id="modalInfoBadges" class="modal-info-badges" style="display: none">
+        {% comment %} data-status é usado pelo CSS para colorir o badge corretamente {% endcomment %}
+        <span id="badgeStatus" class="modal-badge badge-status" data-status="">
+          <i class="fa-solid fa-circle-play badge-status-icon"></i>
+          <span id="badgeStatusTexto"></span>
+        </span>
+        <span id="badgeCategoria" class="modal-badge badge-categoria">
+          <i class="fa-solid fa-tag"></i>
+          <span id="badgeCategoriaTexto"></span>
+        </span>
+        <span id="badgeData" class="modal-badge badge-data">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span id="badgeDataTexto"></span>
+        </span>
+      </div>
+
+    </div>{% comment %} /modal-header {% endcomment %}
+
+
+    {% comment %} ─── FORMULÁRIO PRINCIPAL ─── {% endcomment %}
     <form id="formProcesso" method="POST" action="">
       {% csrf_token %}
 
-      <div class="form-group-full">
-        <textarea
-          name="descricao"
-          id="id_descricao"
-          placeholder="Adicionar descrição..."
-          rows="4"
-        ></textarea>
-      </div>
+      {% comment %} Campo: Descrição — ocupa toda a largura {% endcomment %}
+      <textarea name="descricao"
+                id="id_descricao"
+                class="modal-descricao"
+                placeholder="Adicionar descrição..."
+                rows="3"></textarea>
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Número do Protocolo</label>
-          <input type="text" name="protocolo" id="id_protocolo" required />
+
+      {% comment %} ══════════════════════════════════════════════════════
+         GRADE PRINCIPAL: [ Campos | Fases | Vistorias ]
+         CSS vai fazer 3 colunas aqui (Fase 3)
+         ══════════════════════════════════════════════════════ {% endcomment %}
+      <div class="modal-main-grid">
+
+
+        {% comment %} ── COLUNA 1: Campos do Formulário ── {% endcomment %}
+        <div class="modal-col modal-col-form">
+
+          {% comment %} Sub-grade de 2 colunas para os campos (Fase 3 cuida do grid) {% endcomment %}
+          <div class="form-fields-grid">
+
+            <div class="form-group">
+              <label for="id_protocolo">Número do Protocolo</label>
+              <input type="text"
+                     name="protocolo"
+                     id="id_protocolo"
+                     placeholder="Ex: 2024/00123"
+                     required />
+            </div>
+
+            <div class="form-group">
+              <label for="id_nome">Nome do Processo</label>
+              <input type="text"
+                     name="nome"
+                     id="id_nome"
+                     placeholder="Nome do processo"
+                     required />
+            </div>
+
+            {% comment %} ── Campo Responsáveis com chips ──
+               Visual: chips/tags + input de busca
+               Funcional: select oculto sincronizado pelo JS {% endcomment %}
+            <div class="form-group form-group-full">
+              <label>Responsáveis</label>
+
+              {% comment %} Container visual — clicável, parece um input {% endcomment %}
+              <div class="chips-field" id="responsaveisField"
+                   onclick="document.getElementById('responsaveisSearch').focus()">
+                <div id="responsaveisChips" class="chips-list">
+                  {% comment %} Chips injetados pelo JS {% endcomment %}
+                </div>
+                <input type="text"
+                       id="responsaveisSearch"
+                       class="chips-search-input"
+                       placeholder="Adicionar responsável..."
+                       autocomplete="off" />
+              </div>
+
+              {% comment %} Dropdown de opções — aberto/fechado pelo JS {% endcomment %}
+              <div id="responsaveisDropdown"
+                   class="chips-dropdown"
+                   style="display: none">
+                {% comment %} Opções injetadas pelo JS com base nos usuarios do contexto {% endcomment %}
+              </div>
+
+              {% comment %} Select OCULTO — é ele que vai no submit do form {% endcomment %}
+              <select name="responsaveis"
+                      id="id_responsaveis"
+                      multiple
+                      style="display: none"
+                      aria-hidden="true">
+                {% for usuario in usuarios %}
+                  <option value="{{ usuario.id }}">
+                    {{ usuario.get_full_name|default:usuario.username }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="id_empresa">Empresa</label>
+              {% comment %} onchange atualiza os cards de Empresa/Cliente dinamicamente (JS Fase 4) {% endcomment %}
+              <select name="empresa"
+                      id="id_empresa"
+                      required
+                      onchange="onEmpresaChange(this.value)">
+                <option value="">Selecione a empresa</option>
+                {% for empresa in empresas %}
+                  <option value="{{ empresa.id }}">
+                    {{ empresa.nome_empresa }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="id_categoria">Tipo (Categoria)</label>
+              <select name="categoria" id="id_categoria">
+                <option value="FUNCIONAMENTO">Funcionamento</option>
+                <option value="CONSTRUCAO">Construção</option>
+                <option value="SANITARIO">Sanitário</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="id_orgao">Órgão</label>
+              <select name="orgao" id="id_orgao">
+                <option value="PREFEITURA">Prefeitura</option>
+                <option value="BOMBEIROS">Bombeiros</option>
+              </select>
+            </div>
+
+            {% comment %} ── Campo de busca para processos relacionados ──
+               Não é um input de formulário normal: o JS faz a requisição
+               e vincula o processo via AJAX, sem precisar de submit {% endcomment %}
+            <div class="form-group form-group-full"
+                 id="grupoProcessoRelacionado"
+                 style="display: none">
+              {% comment %} Oculto na criação — só faz sentido após o processo existir {% endcomment %}
+              <label>Adicionar Processo Relacionado</label>
+              <div class="busca-field">
+                <input type="text"
+                       id="buscaRelacionadoInput"
+                       class="busca-input"
+                       placeholder="Buscar por nome ou protocolo..."
+                       autocomplete="off" />
+                <div id="buscaRelacionadoDropdown"
+                     class="busca-dropdown"
+                     style="display: none">
+                  {% comment %} Resultados injetados pelo JS {% endcomment %}
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="id_data_vencimento">Data de Vencimento</label>
+              <input type="date"
+                     name="data_vencimento"
+                     id="id_data_vencimento" />
+              <small class="form-hint">
+                Calculada automaticamente. Altere apenas se necessário.
+              </small>
+            </div>
+
+          </div>{% comment %} /form-fields-grid {% endcomment %}
+        </div>{% comment %} /modal-col-form {% endcomment %}
+
+
+        {% comment %} ── COLUNA 2: Fases do Processo ── {% endcomment %}
+        <div class="modal-col modal-col-fases">
+          <h3 class="col-section-title">
+            <i class="fa-solid fa-list-check"></i> Fases do Processo
+          </h3>
+
+          {% comment %} Conteúdo injetado pelo JS após carregar obter_processo_completo {% endcomment %}
+          <div id="fasesContainer" class="fases-container">
+            <p class="modal-empty-state">
+              Crie o processo para ver as fases.
+            </p>
+          </div>
+        </div>{% comment %} /modal-col-fases {% endcomment %}
+
+
+        {% comment %} ── COLUNA 3: Vistorias ── {% endcomment %}
+        <div class="modal-col modal-col-vistorias">
+          <h3 class="col-section-title">
+            <i class="fa-solid fa-calendar-check"></i> Vistorias Agendadas
+          </h3>
+
+          <div id="vistoriasContainer" class="vistorias-container">
+            <p class="modal-empty-state">
+              Nenhuma vistoria agendada.
+            </p>
+          </div>
+
+          {% comment %} Botão e form inline para nova vistoria — ocultos na criação {% endcomment %}
+          <button type="button"
+                  id="btnAdicionarVistoria"
+                  class="btn-adicionar-item"
+                  onclick="toggleFormNovaVistoria()"
+                  style="display: none">
+            <i class="fa-solid fa-plus"></i> Adicionar Vistoria
+          </button>
+
+          <div id="formNovaVistoria" class="form-inline" style="display: none">
+            <input type="datetime-local"
+                   id="novaVistoriaDataHora"
+                   class="input-inline" />
+            <input type="text"
+                   id="novaVistoriaLocal"
+                   class="input-inline"
+                   placeholder="Local da vistoria" />
+            <textarea id="novaVistoriaObs"
+                      class="textarea-inline"
+                      placeholder="Observações (opcional)"
+                      rows="2"></textarea>
+            <div class="form-inline-acoes">
+              <button type="button"
+                      class="btn-inline-confirmar"
+                      onclick="salvarNovaVistoria()">
+                Salvar
+              </button>
+              <button type="button"
+                      class="btn-inline-cancelar"
+                      onclick="toggleFormNovaVistoria()">
+                Cancelar
+              </button>
+            </div>
+          </div>
+
+        </div>{% comment %} /modal-col-vistorias {% endcomment %}
+
+      </div>{% comment %} /modal-main-grid {% endcomment %}
+
+
+      {% comment %} ══════════════════════════════════════════════════════
+         GRADE INFERIOR: [ Empresa | Cliente | Relacionados ]
+         ══════════════════════════════════════════════════════ {% endcomment %}
+      <div class="modal-info-grid">
+
+        {% comment %} ── Card Empresa ── {% endcomment %}
+        <div class="info-card info-card-empresa" id="cardEmpresa">
+          <div class="info-card-header">
+            <i class="fa-solid fa-building"></i> Empresa
+          </div>
+          <table class="info-card-table">
+            <tbody id="tabelaEmpresaBody">
+              <tr>
+                <td colspan="2" class="modal-empty-state">
+                  Selecione uma empresa acima.
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div class="form-group">
-          <label>Nome do Processo</label>
-          <input type="text" name="nome" id="id_nome" required />
+        {% comment %} ── Card Cliente ── {% endcomment %}
+        <div class="info-card info-card-cliente" id="cardCliente">
+          <div class="info-card-header">
+            <i class="fa-solid fa-user"></i> Cliente
+          </div>
+          <table class="info-card-table">
+            <tbody id="tabelaClienteBody">
+              <tr>
+                <td colspan="2" class="modal-empty-state">
+                  Selecione uma empresa acima.
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div class="form-group">
-          <label>Responsáveis</label>
-          <select name="responsaveis" id="id_responsaveis" multiple>
-            {% for usuario in usuarios %}
-            <option value="{{ usuario.id }}">
-              {{ usuario.username|default:usuario.email }}
-            </option>
-            {% endfor %}
-          </select>
+        {% comment %} ── Processos Relacionados ── {% endcomment %}
+        <div class="info-card info-card-relacionados" id="cardRelacionados">
+          <div class="info-card-header">
+            <i class="fa-solid fa-link"></i> Processos Relacionados
+          </div>
+          <div id="relacionadosContainer" class="relacionados-list">
+            <p class="modal-empty-state">
+              Nenhum processo relacionado.
+            </p>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Nome da Empresa</label>
-          <select name="empresa" id="id_empresa" required>
-            <option value="">Selecione a empresa</option>
-            {% for empresa in empresas %}
-            <option value="{{ empresa.id }}">{{ empresa.nome_empresa }}</option>
-            {% endfor %}
-          </select>
-        </div>
+      </div>{% comment %} /modal-info-grid {% endcomment %}
 
-        <div class="form-group">
-          <label>Tipo (Categoria)</label>
-          <select name="categoria" id="id_categoria">
-            <option value="FUNCIONAMENTO">Funcionamento</option>
-            <option value="CONSTRUCAO">Construção</option>
-            <option value="SANITARIO">Sanitário</option>
-          </select>
-        </div>
 
-        <div class="form-group">
-          <label>Órgão</label>
-          <select name="orgao" id="id_orgao">
-            <option value="PREFEITURA">Prefeitura</option>
-            <option value="BOMBEIROS">Bombeiros</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Data de Vencimento</label>
-          <input type="date" name="data_vencimento" id="id_data_vencimento" />
-          <small>Ao criar, é calculado automaticamente pelo sistema.</small>
-        </div>
-      </div>
-
+      {% comment %} ─── RODAPÉ: Botão de Submissão ─── {% endcomment %}
       <div class="modal-footer">
-        <button type="submit" class="btn-submit">Salvar Processo</button>
+        <button type="submit" id="btnSubmitProcesso" class="btn-submit-modal">
+          Salvar Alterações
+        </button>
       </div>
-    </form>
+
+    </form>{% comment %} /formProcesso {% endcomment %}
+
+  </div>{% comment %} /modal-content {% endcomment %}
+</div>{% comment %} /modalProcessoOverlay {% endcomment %}
+
+
+{% comment %} ============================================================
+   SUB-MODAL: Endereço Completo da Empresa
+   Aparece quando o usuário clica em "Endereço" no card
+   ============================================================ {% endcomment %}
+<div id="subModalEndereco" class="sub-modal-overlay" style="display: none">
+  <div class="sub-modal-content sub-modal-sm">
+    <div class="sub-modal-header">
+      <h4><i class="fa-solid fa-location-dot"></i> Endereço Completo</h4>
+      <button type="button"
+              class="btn-close-modal"
+              onclick="fecharSubModalEndereco()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="sub-modal-body">
+      <p id="enderecoCompletoTexto" class="endereco-completo-texto"></p>
+    </div>
   </div>
 </div>
 
+
+{% comment %} ============================================================
+   SUB-MODAL: Anexos de um Item de Checklist
+   ============================================================ {% endcomment %}
+<div id="subModalAnexos" class="sub-modal-overlay" style="display: none">
+  <div class="sub-modal-content sub-modal-md">
+    <div class="sub-modal-header">
+      <h4 id="subModalAnexosTitulo">
+        <i class="fa-solid fa-paperclip"></i> Anexos
+      </h4>
+      <button type="button"
+              class="btn-close-modal"
+              onclick="fecharSubModalAnexos()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="sub-modal-body">
+
+      {% comment %} Lista de arquivos já anexados (injetada pelo JS) {% endcomment %}
+      <div id="listaAnexos" class="lista-anexos"></div>
+
+      {% comment %} Área de upload {% endcomment %}
+      <label for="inputAnexoUpload" class="upload-area">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span><strong>Clique para enviar</strong> ou arraste um arquivo</span>
+        <small>PNG, JPG, JPEG ou PDF</small>
+        <input type="file"
+               id="inputAnexoUpload"
+               accept=".png,.jpg,.jpeg,.pdf"
+               style="display: none" />
+      </label>
+
+    </div>
+  </div>
+</div>
+
+
+{% comment %} ============================================================
+   TEMPLATES HTML — NÃO são renderizados pelo browser.
+   O JavaScript usa .content.cloneNode(true) para criar cópias.
+   Cada template tem classes e data-attributes que o JS popula.
+   ============================================================ {% endcomment %}
+
+{% comment %} Template: Item de checklist dentro de uma fase {% endcomment %}
+<template id="tplItemChecklist">
+  <div class="checklist-item" data-item-id="">
+    <label class="checklist-label">
+      <input type="checkbox" class="checklist-checkbox" />
+      <span class="checklist-item-nome"></span>
+    </label>
+    <button type="button"
+            class="btn-item-anexo"
+            title="Ver/adicionar anexos">
+      <i class="fa-solid fa-paperclip"></i>
+    </button>
+  </div>
+</template>
+
+{% comment %} Template: Botão "+ Adicionar item" ao final de cada fase {% endcomment %}
+<template id="tplBtnAdicionarItem">
+  <button type="button"
+          class="btn-adicionar-item"
+          data-fase-id="">
+    <i class="fa-solid fa-plus"></i> Adicionar item
+  </button>
+</template>
+
+{% comment %} Template: Item de input inline para nome do novo item {% endcomment %}
+<template id="tplInputNovoItem">
+  <div class="novo-item-inline">
+    <input type="text"
+           class="input-novo-item"
+           placeholder="Nome do novo item..."
+           maxlength="255" />
+    <button type="button" class="btn-inline-confirmar btn-confirmar-novo-item">
+      <i class="fa-solid fa-check"></i>
+    </button>
+    <button type="button" class="btn-inline-cancelar btn-cancelar-novo-item">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+</template>
+
+{% comment %} Template: Card de vistoria {% endcomment %}
+<template id="tplVistoria">
+  <div class="vistoria-item" data-vistoria-id="" data-status="">
+    <div class="vistoria-dados">
+      <span class="vistoria-local"></span>
+      <span class="vistoria-data-hora"></span>
+    </div>
+    <div class="vistoria-acoes">
+      {% comment %} Checkbox para marcar como REALIZADA {% endcomment %}
+      <label class="vistoria-check-label" title="Marcar como realizada">
+        <input type="checkbox" class="vistoria-checkbox-realizada" />
+      </label>
+      {% comment %} Botão para CANCELAR a vistoria {% endcomment %}
+      <button type="button"
+              class="btn-cancelar-vistoria-item"
+              title="Cancelar vistoria">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+</template>
+
+{% comment %} Template: Mini-card de processo relacionado {% endcomment %}
+<template id="tplProcessoRelacionado">
+  <div class="relacionado-card" data-relacionado-id="" data-status="">
+    <div class="relacionado-info">
+      <span class="relacionado-nome"></span>
+      {% comment %} Badge de protocolo colorido pelo data-status via CSS {% endcomment %}
+      <span class="relacionado-protocolo-badge badge-protocolo"></span>
+    </div>
+    <div class="relacionado-acoes">
+      <button type="button"
+              class="btn-editar-relacionado"
+              title="Abrir processo para edição">
+        <i class="fa-solid fa-pen-to-square"></i>
+      </button>
+      <button type="button"
+              class="btn-desvincular-relacionado"
+              title="Desvincular processo">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+</template>
+
+{% comment %} Template: Chip de responsável selecionado {% endcomment %}
+<template id="tplChipResponsavel">
+  <div class="chip-responsavel" data-usuario-id="">
+    <span class="chip-nome"></span>
+    <button type="button"
+            class="chip-remover"
+            title="Remover responsável">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+</template>
+
+{% comment %} Template: Linha da tabela do card Empresa/Cliente {% endcomment %}
+<template id="tplInfoCardRow">
+  <tr class="info-card-row">
+    <td class="info-card-label"></td>
+    <td class="info-card-value"></td>
+  </tr>
+</template>
