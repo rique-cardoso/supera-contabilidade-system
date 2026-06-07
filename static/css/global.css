@@ -151,4 +151,5 @@ header.cabecalho_principal > div:last-of-type{
 
 header.cabecalho_principal p{
   color: var(--contour-form);
+  font-size: 0.8em;
 }
