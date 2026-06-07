@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Supera{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+
+    <!-- ========== SEÇÃO 1: CARDS DE RESUMO ========== -->
+    <!--
+        Cada card é uma tag <a> — semânticamente correto para algo clicável
+        que leva o usuário para outra URL. Usar <div onclick="..."> seria
+        menos acessível (leitores de tela, tabulação com teclado, etc.)
+    -->
+    <section class="summary-cards">
+        <a href="{% url 'gerenciamento_processos' %}" class="summary-card summary-card--ativo">
+            <div class="summary-card__header">
+                <span class="summary-card__label">Ativos</span>
+                <div class="summary-card__icon"><i class="fa-solid fa-circle-play"></i></div>
+            </div>
+            <span class="summary-card__number">{{ total_ativos }}</span>
+            <span class="summary-card__subtitle">processos em andamento</span>
+        </a>
+
+        <a href="{% url 'gerenciamento_processos' %}" class="summary-card summary-card--vencendo">
+            <div class="summary-card__header">
+                <span class="summary-card__label">Vencendo</span>
+                <div class="summary-card__icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            </div>
+            <span class="summary-card__number">{{ total_vencendo }}</span>
+            <span class="summary-card__subtitle">vencem em até 30 dias</span>
+        </a>
+
+        <a href="{% url 'gerenciamento_processos' %}" class="summary-card summary-card--vencido">
+            <div class="summary-card__header">
+                <span class="summary-card__label">Vencidos</span>
+                <div class="summary-card__icon"><i class="fa-solid fa-circle-xmark"></i></div>
+            </div>
+            <span class="summary-card__number">{{ total_vencidos }}</span>
+            <span class="summary-card__subtitle">requerem atenção imediata</span>
+        </a>
+
+        <a href="{% url 'gerenciamento_processos' %}" class="summary-card summary-card--concluido">
+            <div class="summary-card__header">
+                <span class="summary-card__label">Concluídos</span>
+                <div class="summary-card__icon"><i class="fa-solid fa-circle-check"></i></div>
+            </div>
+            <span class="summary-card__number">{{ total_concluidos }}</span>
+            <span class="summary-card__subtitle">finalizados com sucesso</span>
+        </a>
+    </section>
+
+    <!-- ========== SEÇÃO 2: GRID PRINCIPAL ========== -->
+    <div class="dashboard-grid">
+
+        <!-- Painel: Processos Ativos -->
+        <div class="dashboard-panel">
+            <h3 class="panel-title">Processos Ativos</h3>
+            <div class="panel-list">
+                {% for processo in processos_ativos %}
+                <div class="panel-list-item">
+                    <!--
+                        ?abrir_processo={{ processo.id }} é um query param.
+                        O JS no gerenciamento_processos.js vai ler isso e
+                        abrir automaticamente o modal de edição do processo.
+                        Ver Passo 7 desta explicação.
+                    -->
+                    <a href="{% url 'gerenciamento_processos' %}?abrir_processo={{ processo.id }}"
+                       class="item-link"
+                       title="{{ processo.nome }} — {{ processo.empresa.nome_empresa }}">
+                        {{ processo.nome }}
+                    </a>
+                    <span class="item-protocolo">{{ processo.protocolo }}</span>
+                </div>
+                {% empty %}
+                <p class="panel-empty">Nenhum processo ativo no momento.</p>
+                {% endfor %}
+            </div>
+            {% if processos_ativos %}
+            <a href="{% url 'gerenciamento_processos' %}" class="panel-ver-todos">
+                Ver todos os processos →
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Painel: Próximas Vistorias -->
+        <div class="dashboard-panel">
+            <h3 class="panel-title">Próximas Vistorias</h3>
+            <div class="panel-list" id="lista-vistorias">
+                {% for vistoria in proximas_vistorias %}
+                <!--
+                    id="vistoria-item-{{ vistoria.id }}" é o "alvo" que o JS vai
+                    buscar para remover o elemento após a ação do usuário.
+                    Padrão: id único por elemento dinâmico.
+                -->
+                <div class="panel-list-item" id="vistoria-item-{{ vistoria.id }}">
+                    <div class="vistoria-info">
+                        <span class="vistoria-nome">{{ vistoria.processo.nome }}</span>
+                        <span class="vistoria-data">
+                            <i class="fa-solid fa-calendar-days"></i>
+                            {{ vistoria.data_hora|date:"d/m/Y" }}
+                            às {{ vistoria.data_hora|date:"H:i" }}
+                            — {{ vistoria.local }}
+                        </span>
+                    </div>
+                    <div class="vistoria-acoes">
+                        <button
+                            class="btn-vistoria btn-vistoria--concluir"
+                            onclick="atualizarVistoria({{ vistoria.id }}, 'REALIZADA')"
+                            title="Marcar como realizada">
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                        <button
+                            class="btn-vistoria btn-vistoria--cancelar"
+                            onclick="atualizarVistoria({{ vistoria.id }}, 'CANCELADA')"
+                            title="Cancelar vistoria">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="panel-empty">Nenhuma vistoria agendada.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Painel: Gráfico de Pizza -->
+        <div class="dashboard-panel">
+            <h3 class="panel-title">Processos por status</h3>
+            <div class="chart-container">
+                <canvas id="graficoPorStatus"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========== SEÇÃO 3: ÚLTIMAS NOTIFICAÇÕES ========== -->
+    <div class="dashboard-panel">
+        <h3 class="panel-title">Últimas Notificações</h3>
+        <div class="notificacoes-lista">
+            {% for notificacao in ultimas_notificacoes %}
+            <!--
+                notificacao.categoria (ex: "ALERTA_CRITICO") é concatenado à classe
+                CSS "notificacao--ALERTA_CRITICO", que define a cor da borda esquerda.
+                Isso é um padrão BEM (Block Element Modifier) adaptado — a classe
+                carrega semântica de dado, não apenas estilo.
+            -->
+            <div class="notificacao-card notificacao--{{ notificacao.categoria }}">
+                <div class="notificacao-header">
+                    {% if notificacao.categoria == 'ALERTA_CRITICO' %}🚨 Alerta Crítico
+                    {% elif notificacao.categoria == 'ALERTA' %}🔴 Alerta
+                    {% elif notificacao.categoria == 'ATENÇÃO' %}⚠️ Atenção
+                    {% elif notificacao.categoria == 'AGENDAMENTO' %}📅 Agendamento
+                    {% endif %}
+                </div>
+                <div class="notificacao-processo">
+                    {{ notificacao.processo.nome }}
+                    — {{ notificacao.processo.protocolo }}
+                    ({{ notificacao.processo.get_orgao_display }})
+                </div>
+                <div class="notificacao-mensagem">{{ notificacao.mensagem }}</div>
+            </div>
+            {% empty %}
+            <p class="panel-empty">Nenhuma notificação para você.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <!--
+        Chart.js carregado do CDN ANTES do nosso dashboard.js.
+        O nosso script depende de Chart estar disponível globalmente.
+        Ordem de carregamento importa!
+    -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <!--
+        Dados do backend → frontend.
+        Definimos a variável ANTES de carregar dashboard.js, para que
+        o script já encontre ela disponível no escopo global.
+        |safe diz ao Django: "não escape aspas e colchetes desta string JSON".
+    -->
+    <script>
+        const dadosGrafico = {{ dados_grafico|safe }};
+    </script>
+
+    <script src="{% static 'scripts/dashboard.js' %}"></script>
+{% endblock %}

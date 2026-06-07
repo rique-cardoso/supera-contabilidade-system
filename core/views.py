@@ -6,11 +6,13 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.utils import timezone
 from django.core.mail import send_mail
 from django.urls import reverse
 from datetime import date
 from processos.models import Processo, FaseProcesso, Vistoria, Anexo
 from clientes.models import Empresa
+from notificacoes.models import Notificacao
 from core.models import Usuario
 # Create your views here.
 
@@ -419,7 +421,6 @@ def atualizar_status_vistoria(request, vistoria_id):
     Atualiza apenas o status de uma vistoria (REALIZADA, CANCELADA, ADIADA).
     Usa update_fields=['status'] para não recalcular outros campos.
     """
-    import json
     vistoria = get_object_or_404(Vistoria, id=vistoria_id)
 
     try:
@@ -764,6 +765,87 @@ def listar_anexos(request, fase_id): # Mudou para fase_id
             for a in fase.anexos.all() # Atualizado
         ]
     })
+
+# ────────────────────────────────────────────────────────────── 
+
+# DASHBOARD 
+
+# ────────────────────────────────────────────────────────────── 
+@login_required
+def dashboard(request):
+    """
+    View do Dashboard — Painel de controle com visão geral do sistema.
+    """
+
+    # --- CONTAGENS POR STATUS (para os cards de resumo) ---
+    # .count() é muito eficiente: executa um SELECT COUNT(*) no banco,
+    # sem carregar nenhum objeto Python na memória.
+    total_ativos    = Processo.objects.filter(status='ATIVO').count()
+    total_vencendo  = Processo.objects.filter(status='VENCENDO').count()
+    total_vencidos  = Processo.objects.filter(status='VENCIDO').count()
+    total_concluidos = Processo.objects.filter(status='CONCLUIDO').count()
+
+    # --- LISTA DE PROCESSOS ATIVOS (5 mais recentes) ---
+    # select_related('empresa') evita o problema N+1:
+    # sem ele, cada processo em {{ processo.empresa.nome_empresa }}
+    # no template dispararia uma query extra no banco.
+    processos_ativos = (
+        Processo.objects
+        .filter(status='ATIVO')
+        .select_related('empresa')
+        .order_by('-data_criacao')[:5]
+    )
+
+    # --- PRÓXIMAS VISTORIAS AGENDADAS ---
+    # data_hora__gte=timezone.now() filtra apenas vistorias futuras.
+    # Usamos timezone.now() (não date.today()) porque data_hora é DateTimeField.
+    # order_by('data_hora') coloca a MAIS PRÓXIMA primeiro (ascendente).
+    proximas_vistorias = (
+        Vistoria.objects
+        .filter(status='AGENDADA', data_hora__gte=timezone.now())
+        .select_related('processo', 'processo__empresa')
+        .order_by('data_hora')[:5]
+    )
+
+    # --- ÚLTIMAS NOTIFICAÇÕES ---
+    # Admins veem todas as notificações do sistema (visão gerencial).
+    # Usuários comuns veem apenas as direcionadas a eles.
+    if request.user.role == 'admin':
+        ultimas_notificacoes = (
+            Notificacao.objects
+            .select_related('processo')
+            .order_by('-data_geracao')[:3]
+        )
+    else:
+        ultimas_notificacoes = (
+            Notificacao.objects
+            .filter(usuarios_destinatarios=request.user)
+            .select_related('processo')
+            .order_by('-data_geracao')[:3]
+        )
+
+    # --- DADOS DO GRÁFICO DE PIZZA ---
+    # json.dumps() converte o dict Python em uma string JSON válida.
+    # O template vai usar |safe para injetá-la diretamente no JS.
+    # IMPORTANTE: como NÓS geramos este JSON (não o usuário), o |safe é seguro.
+    dados_grafico = json.dumps({
+        'labels': ['Ativos', 'Vencendo', 'Vencidos', 'Concluídos'],
+        'data': [total_ativos, total_vencendo, total_vencidos, total_concluidos],
+        'cores': ['#0068DF', '#CEB13C', '#C23134', '#35B744'],
+    })
+
+    context = {
+        'total_ativos': total_ativos,
+        'total_vencendo': total_vencendo,
+        'total_vencidos': total_vencidos,
+        'total_concluidos': total_concluidos,
+        'processos_ativos': processos_ativos,
+        'proximas_vistorias': proximas_vistorias,
+        'ultimas_notificacoes': ultimas_notificacoes,
+        'dados_grafico': dados_grafico,
+    }
+
+    return render(request, 'dashboard.html', context)
 
 # Rota teste -> apenas para visualizar o arquivo base.html para desenvolvimento
 def base(request):

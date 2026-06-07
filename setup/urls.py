@@ -29,6 +29,7 @@ from core.views import (
     atualizar_perfil,
     convidar_usuario,
     aceitar_convite,
+    dashboard,
     base
 )
 
@@ -83,6 +84,9 @@ urlpatterns = [
     path('api/empresas/', listar_empresas, name='listar_empresas'),
     path('api/empresas/salvar/', salvar_empresa, name='criar_empresa'),
     path('api/empresas/<int:empresa_id>/salvar/', salvar_empresa, name='editar_empresa'),
+
+    # Dashboard
+    path('dashboard/', dashboard, name='dashboard'),
 
     # Rotas de autenticação
     path('login/', auth_views.LoginView.as_view(
