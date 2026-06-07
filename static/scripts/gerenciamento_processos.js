@@ -12,6 +12,7 @@
    9. Processos Relacionados
    10. Sub-modais (Endereço e Anexos)
    11. Menus, Deleção e Filtros
+   12. CRM (Clientes e Empresas)
    ════════════════════════════════════════════════════════════════ */
 
 
@@ -967,3 +968,206 @@ btns_filtro.forEach(btn => {
         aplicarFiltro();
     });
 });
+
+/* ══════════════════════════════════════════
+   12. CRM (CLIENTES E EMPRESAS)
+   ══════════════════════════════════════════ */
+
+// ─── LISTAGENS (Tabelas) ───
+function abrirModalListClientes() {
+    fetchJSON('/api/clientes/')
+    .then(data => {
+        const tbody = document.getElementById('tbodyClientesList');
+        tbody.innerHTML = '';
+        data.clientes.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; font-weight: 700; color: var(--light-font2);">${c.nome_responsavel}</td>
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; color: var(--light-font2); font-size: 0.85rem;">${c.email}</td>
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; color: var(--light-font2); font-size: 0.85rem;">${c.cpf}</td>
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; color: var(--icons); font-size: 0.8rem;">${c.data_criacao}</td>
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; text-align: center;"></td>
+            `;
+            const btn = document.createElement('button');
+            btn.className = 'btn-submit-modal';
+            btn.style.cssText = 'padding: 6px 18px; font-size: 0.8rem; border-radius: 20px;';
+            btn.textContent = 'Editar';
+            btn.onclick = () => abrirModalFormCliente(c);
+            tr.lastElementChild.appendChild(btn);
+            tbody.appendChild(tr);
+        });
+        document.getElementById('modalListClientes').style.display = 'flex';
+    });
+}
+
+function abrirModalListEmpresas() {
+    fetchJSON('/api/empresas/')
+    .then(data => {
+        const tbody = document.getElementById('tbodyEmpresasList');
+        tbody.innerHTML = '';
+        data.empresas.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; font-weight: 700; color: var(--light-font2);">${e.nome_empresa}</td>
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; color: var(--light-font2); font-size: 0.85rem;">${e.cnpj}</td>
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; color: var(--light-font2); font-size: 0.85rem;">${e.cliente_nome}</td>
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; color: var(--icons); font-size: 0.8rem;">${e.data_criacao}</td>
+                <td style="padding: 14px 12px; border-bottom: 1px solid #f0f0f0; text-align: center;"></td>
+            `;
+            const btn = document.createElement('button');
+            btn.className = 'btn-submit-modal';
+            btn.style.cssText = 'padding: 6px 18px; font-size: 0.8rem; border-radius: 20px;';
+            btn.textContent = 'Editar';
+            btn.onclick = () => abrirModalFormEmpresa(e);
+            tr.lastElementChild.appendChild(btn);
+            tbody.appendChild(tr);
+        });
+        document.getElementById('modalListEmpresas').style.display = 'flex';
+    });
+}
+
+// ─── LÓGICA DOS CHIPS (Vínculo Empresa -> Cliente) ───
+const chipsEmpresasClient = new Map();
+
+function inicializarChipsEmpresas() {
+    const searchInput = document.getElementById('empresasClientSearch');
+    const dropdown = document.getElementById('empresasClientDropdown');
+
+    const render = () => {
+        fetchJSON('/api/empresas/').then(data => {
+            const termo = searchInput.value.trim().toLowerCase();
+            const filtradas = data.empresas.filter(e => e.nome_empresa.toLowerCase().includes(termo));
+            
+            dropdown.innerHTML = '';
+            if (filtradas.length === 0) {
+                dropdown.innerHTML = '<div class="chips-dropdown-item" style="pointer-events:none;color:var(--icons)">Nenhuma empresa encontrada</div>';
+            } else {
+                filtradas.forEach(emp => {
+                    const item = document.createElement('div');
+                    item.className = 'chips-dropdown-item';
+                    item.textContent = emp.nome_empresa;
+                    if (chipsEmpresasClient.has(String(emp.id))) item.classList.add('selecionado');
+                    
+                    item.addEventListener('click', () => {
+                        adicionarChipEmpresa(emp.id, emp.nome_empresa);
+                        searchInput.value = '';
+                        dropdown.style.display = 'none';
+                    });
+                    dropdown.appendChild(item);
+                });
+            }
+            dropdown.style.display = 'block';
+        });
+    };
+
+    searchInput.addEventListener('input', debounce(render, 300));
+    searchInput.addEventListener('focus', render);
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#empresasClientField') && !e.target.closest('#empresasClientDropdown')) {
+            dropdown.style.display = 'none';
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', inicializarChipsEmpresas);
+
+function adicionarChipEmpresa(id, nome) {
+    const sid = String(id);
+    if (chipsEmpresasClient.has(sid)) return;
+
+    chipsEmpresasClient.set(sid, nome);
+    const chip = document.createElement('div');
+    chip.className = 'chip-responsavel';
+    chip.dataset.empresaId = sid;
+    chip.innerHTML = `<span class="chip-nome">${nome}</span><button type="button" class="chip-remover"><i class="fa-solid fa-xmark"></i></button>`;
+    
+    chip.querySelector('.chip-remover').addEventListener('click', () => {
+        chipsEmpresasClient.delete(sid);
+        chip.remove();
+    });
+
+    document.getElementById('empresasClientChips').appendChild(chip);
+}
+
+// ─── FORMULÁRIOS ───
+function abrirModalFormCliente(cliente = null) {
+    document.getElementById('formCliente').reset();
+    document.getElementById('empresasClientChips').innerHTML = '';
+    chipsEmpresasClient.clear();
+
+    if (cliente) {
+        document.getElementById('formClienteId').value = cliente.id;
+        document.getElementById('clienteNome').value = cliente.nome_responsavel;
+        document.getElementById('clienteTelefone').value = cliente.telefone;
+        document.getElementById('clienteEmail').value = cliente.email;
+        document.getElementById('clienteCpf').value = cliente.cpf;
+        cliente.empresas.forEach(emp => adicionarChipEmpresa(emp.id, emp.nome_empresa));
+    } else {
+        document.getElementById('formClienteId').value = '';
+    }
+    document.getElementById('modalFormCliente').style.display = 'flex';
+}
+
+function salvarCliente(e) {
+    e.preventDefault();
+    const id = document.getElementById('formClienteId').value;
+    const body = {
+        nome_responsavel: document.getElementById('clienteNome').value,
+        telefone: document.getElementById('clienteTelefone').value,
+        email: document.getElementById('clienteEmail').value,
+        cpf: document.getElementById('clienteCpf').value,
+        empresas: Array.from(chipsEmpresasClient.keys())
+    };
+
+    fetchJSON(id ? `/api/clientes/${id}/salvar/` : `/api/clientes/salvar/`, {
+        method: id ? 'PUT' : 'POST', body: JSON.stringify(body)
+    }).then(() => {
+        fecharModalFormCliente();
+        abrirModalListClientes(); // Atualiza a tabela com o recém-salvo
+    }).catch(err => alert(err.message));
+}
+
+function abrirModalFormEmpresa(empresa = null) {
+    document.getElementById('formEmpresa').reset();
+    
+    // Popula o select de Clientes antes de abrir
+    fetchJSON('/api/clientes/').then(data => {
+        const sel = document.getElementById('empresaClienteSelect');
+        sel.innerHTML = '<option value="">Selecione o Cliente</option>';
+        data.clientes.forEach(c => { sel.innerHTML += `<option value="${c.id}">${c.nome_responsavel}</option>`; });
+
+        if (empresa) {
+            document.getElementById('formEmpresaId').value = empresa.id;
+            document.getElementById('empresaNome').value = empresa.nome_empresa;
+            document.getElementById('empresaCnpj').value = empresa.cnpj;
+            document.getElementById('empresaCnae').value = empresa.cnae;
+            sel.value = empresa.cliente_id;
+        } else {
+            document.getElementById('formEmpresaId').value = '';
+        }
+        document.getElementById('modalFormEmpresa').style.display = 'flex';
+    });
+}
+
+function salvarEmpresa(e) {
+    e.preventDefault();
+    const id = document.getElementById('formEmpresaId').value;
+    const body = {
+        cliente_id: document.getElementById('empresaClienteSelect').value,
+        nome_empresa: document.getElementById('empresaNome').value,
+        cnpj: document.getElementById('empresaCnpj').value,
+        cnae: document.getElementById('empresaCnae').value,
+    };
+
+    fetchJSON(id ? `/api/empresas/${id}/salvar/` : `/api/empresas/salvar/`, {
+        method: id ? 'PUT' : 'POST', body: JSON.stringify(body)
+    }).then(() => {
+        fecharModalFormEmpresa();
+        abrirModalListEmpresas(); // Atualiza a tabela
+    }).catch(err => alert(err.message));
+}
+
+function fecharModalListClientes() { document.getElementById('modalListClientes').style.display = 'none'; }
+function fecharModalFormCliente() { document.getElementById('modalFormCliente').style.display = 'none'; }
+function fecharModalListEmpresas() { document.getElementById('modalListEmpresas').style.display = 'none'; }
+function fecharModalFormEmpresa() { document.getElementById('modalFormEmpresa').style.display = 'none'; }

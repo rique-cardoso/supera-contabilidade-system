@@ -15,8 +15,8 @@
             <button class="btn-filtro" data-filtro="BOMBEIROS">Bombeiros</button>
         </div>
         <div class="container_empresas_clientes">
-            <button class="btn-criar-empresa_cliente">Cliente</button>
-            <button class="btn-criar-empresa_cliente">Empresa</button>
+            <button class="btn-criar-empresa_cliente" onclick="abrirModalListClientes()">Cliente</button>
+            <button class="btn-criar-empresa_cliente" onclick="abrirModalListEmpresas()">Empresa</button>
         </div>
 </aside>
 <div class="kanban-wrapper">
@@ -110,6 +110,8 @@
 </div>
 <!-- MODAL DE CRIAÇÃO / EDIÇÃO -->
  {% include 'partials/modal_processo.html' %}
+<!-- MODAL CRM -->
+ {% include 'partials/modais_crm.html' %}
 {% endblock %}
 
 {% block extra_js %}

@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from core.forms import CustomLoginForm
 from django.conf import settings
 from django.conf.urls.static import static
+from clientes.views import listar_clientes, listar_empresas, salvar_cliente, salvar_empresa
 from core.views import (
     gerenciamento_processos,
     criar_processo,
@@ -61,6 +62,14 @@ urlpatterns = [
 
     # API: Empresa
     path('api/empresas/<int:empresa_id>/detalhes/', obter_empresa_detalhes, name='obter_empresa_detalhes'),
+
+    # API: Clientes e Empresas
+    path('api/clientes/', listar_clientes, name='listar_clientes'),
+    path('api/clientes/salvar/', salvar_cliente, name='criar_cliente'),
+    path('api/clientes/<int:cliente_id>/salvar/', salvar_cliente, name='editar_cliente'),
+    path('api/empresas/', listar_empresas, name='listar_empresas'),
+    path('api/empresas/salvar/', salvar_empresa, name='criar_empresa'),
+    path('api/empresas/<int:empresa_id>/salvar/', salvar_empresa, name='editar_empresa'),
 
     # Rotas de autenticação
     path('login/', auth_views.LoginView.as_view(
