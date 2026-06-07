@@ -30,6 +30,7 @@ from core.views import (
     convidar_usuario,
     aceitar_convite,
     dashboard,
+    marcar_notificacao_lida,
     base
 )
 
@@ -87,6 +88,7 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/', dashboard, name='dashboard'),
+    path('api/notificacoes/<int:notificacao_id>/lida/', marcar_notificacao_lida, name='marcar_notificacao_lida'),
 
     # Rotas de autenticação
     path('login/', auth_views.LoginView.as_view(

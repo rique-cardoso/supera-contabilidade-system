@@ -780,6 +780,7 @@ def dashboard(request):
     # --- CONTAGENS POR STATUS (para os cards de resumo) ---
     # .count() é muito eficiente: executa um SELECT COUNT(*) no banco,
     # sem carregar nenhum objeto Python na memória.
+    total_processos = Processo.objects.exclude(status='EXCLUIDO').count()
     total_ativos    = Processo.objects.filter(status='ATIVO').count()
     total_vencendo  = Processo.objects.filter(status='VENCENDO').count()
     total_vencidos  = Processo.objects.filter(status='VENCIDO').count()
@@ -813,13 +814,14 @@ def dashboard(request):
     if request.user.role == 'admin':
         ultimas_notificacoes = (
             Notificacao.objects
+            .filter(is_lida=False)
             .select_related('processo')
             .order_by('-data_geracao')[:3]
         )
     else:
         ultimas_notificacoes = (
             Notificacao.objects
-            .filter(usuarios_destinatarios=request.user)
+            .filter(usuarios_destinatarios=request.user, is_lida=False)
             .select_related('processo')
             .order_by('-data_geracao')[:3]
         )
@@ -835,6 +837,7 @@ def dashboard(request):
     })
 
     context = {
+        'total_processos': total_processos,
         'total_ativos': total_ativos,
         'total_vencendo': total_vencendo,
         'total_vencidos': total_vencidos,
@@ -847,6 +850,34 @@ def dashboard(request):
 
     return render(request, 'dashboard.html', context)
 
+@login_required
+@require_http_methods(["PATCH"])
+def marcar_notificacao_lida(request, notificacao_id):
+    """
+    Marca uma notificação como lida (limpá-la do dashboard).
+    NÃO deleta do banco — preserva o histórico de eventos do sistema.
+
+    Segurança: usuários comuns só podem marcar notificações
+    das quais são destinatários. Admins podem marcar qualquer uma.
+    """
+    notificacao = get_object_or_404(Notificacao, id=notificacao_id)
+
+    # Verificação de permissão no backend — nunca confie só no frontend.
+    # Um usuário mal-intencionado poderia chamar esta rota com o ID de
+    # uma notificação de outro usuário.
+    if request.user.role != 'admin':
+        eh_destinatario = notificacao.usuarios_destinatarios.filter(
+            id=request.user.id
+        ).exists()
+        if not eh_destinatario:
+            return JsonResponse({'erro': 'Sem permissão para esta ação.'}, status=403)
+
+    # O método marcar_como_lida() já existe no model Notificacao.
+    # Usa save(update_fields=['is_lida']) — só atualiza esse campo no banco,
+    # sem reescrever toda a linha. Mais eficiente.
+    notificacao.marcar_como_lida()
+
+    return JsonResponse({'mensagem': 'Notificação marcada como lida.'})
 # Rota teste -> apenas para visualizar o arquivo base.html para desenvolvimento
 def base(request):
     return render(request, 'base.html')

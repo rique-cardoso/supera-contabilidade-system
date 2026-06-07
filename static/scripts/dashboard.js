@@ -128,3 +128,55 @@ function atualizarVistoria(vistoriaId, novoStatus) {
         alert('Não foi possível atualizar a vistoria. Tente novamente.');
     });
 }
+// ============================================================
+// LIMPAR NOTIFICAÇÃO (marcar como lida)
+// NÃO deleta do banco — apenas set is_lida=True.
+// O dashboard filtra is_lida=False, então não reaparece.
+// ============================================================
+function limparNotificacao(notificacaoId) {
+    fetch(`/api/notificacoes/${notificacaoId}/lida/`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Erro na requisição');
+        return response.json();
+    })
+    .then(() => {
+        const card = document.getElementById(`notificacao-item-${notificacaoId}`);
+        if (!card) return;
+
+        // Passo 1: anima a saída — desliza para a direita enquanto some
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(15px)';
+
+        // Passo 2: após a animação de fade, colapsa a altura para
+        // que os cartões abaixo subam suavemente (sem "pulo" brusco)
+        setTimeout(() => {
+            card.style.maxHeight = card.offsetHeight + 'px'; // trava altura atual
+            card.style.transition = 'max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease';
+            card.style.maxHeight = '0';
+            card.style.paddingTop = '0';
+            card.style.paddingBottom = '0';
+            card.style.marginBottom = '0';
+
+            // Passo 3: remove do DOM depois que tudo colapsar
+            setTimeout(() => {
+                card.remove();
+
+                // Estado vazio: se não há mais notificações, mostra mensagem
+                const lista = document.getElementById('lista-notificacoes');
+                if (lista && lista.children.length === 0) {
+                    lista.innerHTML = '<p class="panel-empty">Nenhuma notificação pendente. ✅</p>';
+                }
+            }, 350);
+        }, 300);
+    })
+    .catch(error => {
+        console.error('Erro ao marcar notificação como lida:', error);
+        alert('Não foi possível limpar a notificação. Tente novamente.');
+    });
+}
