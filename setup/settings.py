@@ -132,7 +132,7 @@ AUTH_USER_MODEL = 'core.Usuario'
 LOGIN_URL = 'login'
 
 # Rota para onde o usuário vai automaticamente após acertar a senha
-LOGIN_REDIRECT_URL = 'gerenciamento_processos'
+LOGIN_REDIRECT_URL = 'dashboard'
 
 # Rota para onde o usuário vai após clicar em "Sair/Logout"
 LOGOUT_REDIRECT_URL = 'login'

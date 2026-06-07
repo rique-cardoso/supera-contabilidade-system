@@ -38,7 +38,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Rota raiz (home)
-    path('', gerenciamento_processos, name='gerenciamento_processos'),
+    path('gerenciamento_processos', gerenciamento_processos, name='gerenciamento_processos'),
 
     # Configurações e Perfil
     path('configuracoes/', configuracoes, name='configuracoes'),
