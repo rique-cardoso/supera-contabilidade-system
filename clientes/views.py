@@ -1,3 +1,4 @@
+import re
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -44,9 +45,15 @@ def listar_empresas(request):
 @login_required
 @require_http_methods(["POST", "PUT"])
 def salvar_cliente(request, cliente_id=None):
-    """Cria ou edita um Cliente e atualiza os vínculos com as Empresas (chips)."""
     try:
         data = json.loads(request.body)
+        
+        # Validação Backend do CPF
+        cpf_str = data.get('cpf', '')
+        cpf_numeros = re.sub(r'\D', '', cpf_str) # Extrai apenas os números
+        if len(cpf_numeros) != 11:
+            return JsonResponse({'erro': 'O CPF deve conter exatamente 11 números.'}, status=400)
+
         if cliente_id:
             cliente = get_object_or_404(Cliente, id=cliente_id)
         else:
@@ -55,10 +62,9 @@ def salvar_cliente(request, cliente_id=None):
         cliente.nome_responsavel = data.get('nome_responsavel')
         cliente.telefone = data.get('telefone')
         cliente.email = data.get('email')
-        cliente.cpf = data.get('cpf')
+        cliente.cpf = cpf_str # Salva com a máscara perfeitamente formatada
         cliente.save()
 
-        # Atualiza a relação 1:N (transfere as empresas selecionadas para este cliente)
         empresas_ids = data.get('empresas', [])
         if empresas_ids:
             Empresa.objects.filter(id__in=empresas_ids).update(cliente=cliente)
@@ -70,13 +76,18 @@ def salvar_cliente(request, cliente_id=None):
 @login_required
 @require_http_methods(["POST", "PUT"])
 def salvar_empresa(request, empresa_id=None):
-    """Cria ou edita uma Empresa garantindo a obrigatoriedade do Cliente."""
     try:
         data = json.loads(request.body)
-        if empresa_id:
-            empresa = get_object_or_404(Empresa, id=empresa_id)
-        else:
-            empresa = Empresa()
+        
+        # Validação Backend de CNPJ e CNAE
+        cnpj_str = data.get('cnpj', '')
+        cnae_str = data.get('cnae', '')
+        
+        if len(re.sub(r'\D', '', cnpj_str)) != 14:
+            return JsonResponse({'erro': 'O CNPJ deve conter exatamente 14 números.'}, status=400)
+            
+        if len(re.sub(r'\D', '', cnae_str)) != 7:
+            return JsonResponse({'erro': 'O CNAE deve conter exatamente 7 números.'}, status=400)
 
         cliente_id = data.get('cliente_id')
         if not cliente_id:
@@ -84,9 +95,14 @@ def salvar_empresa(request, empresa_id=None):
 
         cliente = get_object_or_404(Cliente, id=cliente_id)
 
+        if empresa_id:
+            empresa = get_object_or_404(Empresa, id=empresa_id)
+        else:
+            empresa = Empresa()
+
         empresa.nome_empresa = data.get('nome_empresa')
-        empresa.cnpj = data.get('cnpj')
-        empresa.cnae = data.get('cnae')
+        empresa.cnpj = cnpj_str # Salva com a máscara
+        empresa.cnae = cnae_str # Salva com a máscara
         empresa.cliente = cliente
         empresa.save()
 

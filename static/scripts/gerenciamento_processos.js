@@ -1266,3 +1266,114 @@ function fecharModalListEmpresas() {
 function fecharModalFormEmpresa() {
   document.getElementById("modalFormEmpresa").style.display = "none";
 }
+
+// ─── MÁSCARAS DE INPUT E VALIDAÇÃO FRONT-END ───
+
+// Funções de formatação Regex
+const mascaras = {
+    cpf(valor) {
+        return valor
+            .replace(/\D/g, '') // Remove tudo o que não é dígito
+            .replace(/(\d{3})(\d)/, '$1.$2') // Coloca ponto
+            .replace(/(\d{3})(\d)/, '$1.$2') // Coloca ponto
+            .replace(/(\d{3})(\d{1,2})/, '$1-$2') // Coloca traço
+            .replace(/(-\d{2})\d+?$/, '$1'); // Impede digitação extra
+    },
+    cnpj(valor) {
+        return valor
+            .replace(/\D/g, '')
+            .replace(/(\d{2})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1/$2')
+            .replace(/(\d{4})(\d{1,2})/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    },
+    telefone(valor) {
+        return valor
+            .replace(/\D/g, '')
+            .replace(/(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{4,5})(\d{4})$/, '$1-$2'); // Lida com 8 ou 9 dígitos
+    },
+    cnae(valor) {
+        return valor
+            .replace(/\D/g, '')                   // Remove tudo o que não é dígito
+            .replace(/^(\d{4})(\d)/, '$1-$2')     // Coloca o traço após os 4 primeiros dígitos
+            .replace(/^(\d{4}-\d)(\d)/, '$1/$2')  // Coloca a barra após o 5º dígito
+            .substring(0, 9);                     // Garante o tamanho máximo de 0000-0/00
+    }
+};
+
+// Aplicação dos eventos aos inputs quando a página carrega
+document.addEventListener('DOMContentLoaded', () => {
+    // Só adiciona se o elemento existir na tela
+    const inCpf = document.getElementById('clienteCpf');
+    const inTel = document.getElementById('clienteTelefone');
+    const inCnpj = document.getElementById('empresaCnpj');
+    const inCnae = document.getElementById('empresaCnae');
+
+    if(inCpf) inCpf.addEventListener('input', (e) => { e.target.value = mascaras.cpf(e.target.value); });
+    if(inTel) inTel.addEventListener('input', (e) => { e.target.value = mascaras.telefone(e.target.value); });
+    if(inCnpj) inCnpj.addEventListener('input', (e) => { e.target.value = mascaras.cnpj(e.target.value); });
+    if(inCnae) inCnae.addEventListener('input', (e) => { e.target.value = mascaras.cnae(e.target.value); });
+});
+
+// ─── SUBSTITUA AS FUNÇÕES DE SALVAR ORIGINAIS POR ESTAS ───
+
+function salvarCliente(e) {
+  e.preventDefault();
+  
+  // Validação Front-end Básica
+  const cpfRaw = document.getElementById("clienteCpf").value.replace(/\D/g, '');
+  const telRaw = document.getElementById("clienteTelefone").value.replace(/\D/g, '');
+  
+  if (cpfRaw.length !== 11) return alert("Por favor, preencha o CPF corretamente (11 dígitos).");
+  if (telRaw.length < 10) return alert("Por favor, preencha o telefone com DDD válido.");
+
+  const id = document.getElementById("formClienteId").value;
+  const body = {
+    nome_responsavel: document.getElementById("clienteNome").value,
+    telefone: document.getElementById("clienteTelefone").value, // Envia formatado com a máscara
+    email: document.getElementById("clienteEmail").value,
+    cpf: document.getElementById("clienteCpf").value, // Envia formatado
+    empresas: Array.from(chipsEmpresasClient.keys()),
+  };
+
+  fetchJSON(id ? `/api/clientes/${id}/salvar/` : `/api/clientes/salvar/`, {
+    method: id ? "PUT" : "POST",
+    body: JSON.stringify(body),
+  })
+    .then(() => {
+      fecharModalFormCliente();
+      abrirModalListClientes();
+    })
+    .catch((err) => alert(err.message));
+}
+
+function salvarEmpresa(e) {
+  e.preventDefault();
+
+  // Validação Front-end Básica
+  const cnpjRaw = document.getElementById("empresaCnpj").value.replace(/\D/g, '');
+  const cnaeRaw = document.getElementById("empresaCnae").value.replace(/\D/g, '');
+  
+  if (cnpjRaw.length !== 14) return alert("Por favor, preencha o CNPJ corretamente (14 dígitos).");
+  if (cnaeRaw.length !== 7) return alert("Por favor, preencha o CNAE corretamente (7 dígitos).");
+
+  const id = document.getElementById("formEmpresaId").value;
+  const body = {
+    cliente_id: document.getElementById("empresaClienteSelect").value,
+    nome_empresa: document.getElementById("empresaNome").value,
+    cnpj: document.getElementById("empresaCnpj").value,
+    cnae: document.getElementById("empresaCnae").value,
+  };
+
+  fetchJSON(id ? `/api/empresas/${id}/salvar/` : `/api/empresas/salvar/`, {
+    method: id ? "PUT" : "POST",
+    body: JSON.stringify(body),
+  })
+    .then(() => {
+      fecharModalFormEmpresa();
+      abrirModalListEmpresas();
+    })
+    .catch((err) => alert(err.message));
+}

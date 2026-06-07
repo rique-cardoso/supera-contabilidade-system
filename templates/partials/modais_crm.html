@@ -35,9 +35,9 @@
       <input type="hidden" id="formClienteId">
       <div class="form-fields-grid crm-form-grid">
         <div class="form-group"><label>Nome Responsável</label><input type="text" id="clienteNome" class="input-inline" required></div>
-        <div class="form-group"><label>Telefone</label><input type="text" id="clienteTelefone" class="input-inline" required></div>
+        <div class="form-group"><label>Telefone</label><input type="tel" id="clienteTelefone" class="input-inline" placeholder="(00) 00000-0000" maxlength="15" required></div>
         <div class="form-group"><label>E-mail</label><input type="email" id="clienteEmail" class="input-inline" required></div>
-        <div class="form-group"><label>CPF</label><input type="text" id="clienteCpf" class="input-inline" required></div>
+        <div class="form-group"><label>CPF</label><input type="text" id="clienteCpf" class="input-inline" placeholder="000.000.000-00" maxlength="14" required></div>
         
         <div class="form-group form-group-full">
           <label>Empresas</label>
@@ -98,8 +98,8 @@
           </select>
         </div>
         <div class="form-group"><label>Nome Empresa</label><input type="text" id="empresaNome" class="input-inline" required></div>
-        <div class="form-group"><label>CNPJ</label><input type="text" id="empresaCnpj" class="input-inline" required></div>
-        <div class="form-group"><label>CNAE</label><input type="text" id="empresaCnae" class="input-inline" required></div>
+        <div class="form-group"><label>CNPJ</label><input type="text" id="empresaCnpj" class="input-inline" placeholder="00.000.000/0000-00" maxlength="18" required></div>
+        <div class="form-group"><label>CNAE</label><input type="text" id="empresaCnae" class="input-inline" placeholder="0000-0/00" maxlength="9" required></div>
       </div>
       <div class="crm-form-submit-container">
         <button type="submit" class="btn-submit-modal btn-large">Salvar</button>
