@@ -5,6 +5,7 @@ from core.forms import CustomLoginForm
 from django.conf import settings
 from django.conf.urls.static import static
 from clientes.views import listar_clientes, listar_empresas, salvar_cliente, salvar_empresa
+from django.views.generic import TemplateView
 from core.views import (
     gerenciamento_processos,
     criar_processo,
@@ -90,8 +91,9 @@ urlpatterns = [
     ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
-    # Rota para testes
+    # Rotas para testes
     path('base/', base, name='base'),
+    path('teste-convite/', TemplateView.as_view(template_name='aceitar_convite.html')),
 ]
 
 # Server arquivos de mídia em desenvolvimento

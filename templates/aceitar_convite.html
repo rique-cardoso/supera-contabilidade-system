@@ -5,16 +5,24 @@
     <title>Criar Senha | Supera</title>
     <link rel="stylesheet" href="/static/css/global.css">
     <link rel="stylesheet" href="/static/css/login.css">
+    <style>
+        .btn-atv-conta{
+            background-color: var(--main);
+        }
+        .btn-atv-conta:hover{
+            background-color: var(--secondary);
+        }
+    </style>
 </head>
-<body style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: var(--area-background);">
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #4a6b8c; background: linear-gradient(180deg, #102a43,#59929a,#b8e3ac);">
     <div style="background: white; padding: 40px; border-radius: 20px; width: 400px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-        <img src="/static/img/logo-login.png" alt="Logo Supera" style="max-width: 150px; margin-bottom: 20px;">
+        <img src="/static/img/logo-header.png" alt="Logo Supera" style="max-width: 150px; margin-bottom: 20px;">
         
         {% if erro_link %}
             <h3 style="color: var(--st-vencido); margin-bottom: 15px;">Acesso Negado</h3>
             <p style="color: var(--icons);">{{ erro_link }}</p>
         {% else %}
-            <h2 style="color: var(--main); margin-bottom: 10px;">Bem-vindo!</h2>
+            <h2 style="color: var(--main); margin-bottom: 10px;">Bem-vindo(a)!</h2>
             <p style="color: var(--icons); font-size: 0.9rem; margin-bottom: 20px;">Por favor, crie sua senha definitiva para acessar a plataforma.</p>
             
             {% if erro %}
@@ -31,7 +39,7 @@
                     <label style="color: var(--light-font2);">Confirme a Senha</label>
                     <input type="password" name="confirmacao" class="input-login" required style="width: 100%; border: 1px solid var(--contour-form); border-radius: 5px; padding: 10px;">
                 </div>
-                <button type="submit" style="width: 100%; background-color: var(--main); color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Ativar Conta</button>
+                <button class="btn-atv-conta" type="submit" style="width: 100%; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;">Ativar Conta</button>
             </form>
         {% endif %}
     </div>
