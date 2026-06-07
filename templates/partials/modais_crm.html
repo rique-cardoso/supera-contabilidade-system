@@ -1,20 +1,22 @@
 {% comment %} MODAL: LISTAGEM DE CLIENTES {% endcomment %}
-<div id="modalListClientes" class="sub-modal-overlay" style="display: none; z-index: 3000;">
-  <div class="sub-modal-content" style="width: 850px; max-width: 95vw; padding: 40px; border-radius: 20px;">
-    <button type="button" class="btn-close-modal" onclick="fecharModalListClientes()" style="position: absolute; right: 20px; top: 20px;"><i class="fa-solid fa-xmark"></i></button>
-    <h2 style="text-align: center; color: var(--light-font2); font-size: 2rem; margin-bottom: 10px;">Clientes</h2>
-    <div style="text-align: center; margin-bottom: 30px;">
-      <button class="btn-submit-modal" style="padding: 8px 24px; font-size: 0.85rem;" onclick="abrirModalFormCliente()">Adicionar Novo</button>
+<div id="modalListClientes" class="sub-modal-overlay" style="display: none;">
+  <div class="sub-modal-content modal-large">
+    <button type="button" class="btn-close-modal" onclick="fecharModalListClientes()"><i class="fa-solid fa-xmark"></i></button>
+    <h2 class="crm-modal-title title-margin-sm">Clientes</h2>
+    
+    <div class="crm-action-bar">
+      <button class="btn-submit-modal crm-btn-add" onclick="abrirModalFormCliente()">Adicionar Novo</button>
     </div>
-    <div style="max-height: 50vh; overflow-y: auto;">
-      <table style="width: 100%; border-collapse: collapse; text-align: left;">
-        <thead style="background-color: #eef4d0; position: sticky; top: 0; z-index: 1;">
+    
+    <div class="crm-table-container">
+      <table class="crm-table">
+        <thead>
           <tr>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem;">Nome Responsável</th>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem;">E-mail</th>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem;">CPF</th>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem;">Data Criação</th>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem; text-align: center;">Editar</th>
+            <th>Nome Responsável</th>
+            <th>E-mail</th>
+            <th>CPF</th>
+            <th>Data Criação</th>
+            <th class="text-center">Editar</th>
           </tr>
         </thead>
         <tbody id="tbodyClientesList"></tbody>
@@ -24,52 +26,54 @@
 </div>
 
 {% comment %} MODAL: FORMULÁRIO DE CLIENTES {% endcomment %}
-<div id="modalFormCliente" class="sub-modal-overlay" style="display: none; z-index: 3001;">
-  <div class="sub-modal-content" style="width: 650px; max-width: 95vw; padding: 40px; border-radius: 20px;">
-    <button type="button" class="btn-close-modal" onclick="fecharModalFormCliente()" style="position: absolute; right: 20px; top: 20px;"><i class="fa-solid fa-xmark"></i></button>
-    <h2 style="text-align: center; color: var(--light-font2); font-size: 2rem; margin-bottom: 30px;">Clientes</h2>
+<div id="modalFormCliente" class="sub-modal-overlay modal-top" style="display: none;">
+  <div class="sub-modal-content modal-medium">
+    <button type="button" class="btn-close-modal" onclick="fecharModalFormCliente()"><i class="fa-solid fa-xmark"></i></button>
+    <h2 class="crm-modal-title title-margin-lg">Clientes</h2>
     
     <form id="formCliente" onsubmit="salvarCliente(event)">
       <input type="hidden" id="formClienteId">
-      <div class="form-fields-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div class="form-group"><label>Nome Responsável</label><input type="text" id="clienteNome" class="input-inline" style="background:#fff" required></div>
-        <div class="form-group"><label>Telefone</label><input type="text" id="clienteTelefone" class="input-inline" style="background:#fff" required></div>
-        <div class="form-group"><label>E-mail</label><input type="email" id="clienteEmail" class="input-inline" style="background:#fff" required></div>
-        <div class="form-group"><label>CPF</label><input type="text" id="clienteCpf" class="input-inline" style="background:#fff" required></div>
+      <div class="form-fields-grid crm-form-grid">
+        <div class="form-group"><label>Nome Responsável</label><input type="text" id="clienteNome" class="input-inline" required></div>
+        <div class="form-group"><label>Telefone</label><input type="text" id="clienteTelefone" class="input-inline" required></div>
+        <div class="form-group"><label>E-mail</label><input type="email" id="clienteEmail" class="input-inline" required></div>
+        <div class="form-group"><label>CPF</label><input type="text" id="clienteCpf" class="input-inline" required></div>
         
         <div class="form-group form-group-full">
           <label>Empresas</label>
-          <div class="chips-field" id="empresasClientField" style="background:#fff" onclick="document.getElementById('empresasClientSearch').focus()">
+          <div class="chips-field" id="empresasClientField" onclick="document.getElementById('empresasClientSearch').focus()">
             <div id="empresasClientChips" class="chips-list"></div>
             <input type="text" id="empresasClientSearch" class="chips-search-input" placeholder="Vincular empresa existente..." autocomplete="off">
           </div>
           <div id="empresasClientDropdown" class="chips-dropdown" style="display: none"></div>
         </div>
       </div>
-      <div style="text-align: center; margin-top: 40px;">
-        <button type="submit" class="btn-submit-modal" style="padding: 12px 60px;">Salvar</button>
+      <div class="crm-form-submit-container">
+        <button type="submit" class="btn-submit-modal btn-large">Salvar</button>
       </div>
     </form>
   </div>
 </div>
 
 {% comment %} MODAL: LISTAGEM DE EMPRESAS {% endcomment %}
-<div id="modalListEmpresas" class="sub-modal-overlay" style="display: none; z-index: 3000;">
-  <div class="sub-modal-content" style="width: 850px; max-width: 95vw; padding: 40px; border-radius: 20px;">
-    <button type="button" class="btn-close-modal" onclick="fecharModalListEmpresas()" style="position: absolute; right: 20px; top: 20px;"><i class="fa-solid fa-xmark"></i></button>
-    <h2 style="text-align: center; color: var(--light-font2); font-size: 2rem; margin-bottom: 10px;">Empresas</h2>
-    <div style="text-align: center; margin-bottom: 30px;">
-      <button class="btn-submit-modal" style="padding: 8px 24px; font-size: 0.85rem;" onclick="abrirModalFormEmpresa()">Adicionar Novo</button>
+<div id="modalListEmpresas" class="sub-modal-overlay" style="display: none;">
+  <div class="sub-modal-content modal-large">
+    <button type="button" class="btn-close-modal" onclick="fecharModalListEmpresas()"><i class="fa-solid fa-xmark"></i></button>
+    <h2 class="crm-modal-title title-margin-sm">Empresas</h2>
+    
+    <div class="crm-action-bar">
+      <button class="btn-submit-modal crm-btn-add" onclick="abrirModalFormEmpresa()">Adicionar Novo</button>
     </div>
-    <div style="max-height: 50vh; overflow-y: auto;">
-      <table style="width: 100%; border-collapse: collapse; text-align: left;">
-        <thead style="background-color: #eef4d0; position: sticky; top: 0; z-index: 1;">
+    
+    <div class="crm-table-container">
+      <table class="crm-table">
+        <thead>
           <tr>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem;">Nome Empresa</th>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem;">CNPJ</th>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem;">Cliente</th>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem;">Data Criação</th>
-            <th style="padding: 12px; color: var(--main); font-size: 0.85rem; text-align: center;">Editar</th>
+            <th>Nome Empresa</th>
+            <th>CNPJ</th>
+            <th>Cliente</th>
+            <th>Data Criação</th>
+            <th class="text-center">Editar</th>
           </tr>
         </thead>
         <tbody id="tbodyEmpresasList"></tbody>
@@ -79,26 +83,26 @@
 </div>
 
 {% comment %} MODAL: FORMULÁRIO DE EMPRESAS {% endcomment %}
-<div id="modalFormEmpresa" class="sub-modal-overlay" style="display: none; z-index: 3001;">
-  <div class="sub-modal-content" style="width: 650px; max-width: 95vw; padding: 40px; border-radius: 20px;">
-    <button type="button" class="btn-close-modal" onclick="fecharModalFormEmpresa()" style="position: absolute; right: 20px; top: 20px;"><i class="fa-solid fa-xmark"></i></button>
-    <h2 style="text-align: center; color: var(--light-font2); font-size: 2rem; margin-bottom: 30px;">Empresas</h2>
+<div id="modalFormEmpresa" class="sub-modal-overlay modal-top" style="display: none;">
+  <div class="sub-modal-content modal-medium">
+    <button type="button" class="btn-close-modal" onclick="fecharModalFormEmpresa()"><i class="fa-solid fa-xmark"></i></button>
+    <h2 class="crm-modal-title title-margin-lg">Empresas</h2>
     
     <form id="formEmpresa" onsubmit="salvarEmpresa(event)">
       <input type="hidden" id="formEmpresaId">
-      <div class="form-fields-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="form-fields-grid crm-form-grid">
         <div class="form-group form-group-full">
           <label>Cliente</label>
-          <select id="empresaClienteSelect" class="input-inline" style="background:#fff; height: 38px;" required>
+          <select id="empresaClienteSelect" class="input-inline" required>
             <option value="">Selecione o Cliente</option>
           </select>
         </div>
-        <div class="form-group"><label>Nome Empresa</label><input type="text" id="empresaNome" class="input-inline" style="background:#fff" required></div>
-        <div class="form-group"><label>CNPJ</label><input type="text" id="empresaCnpj" class="input-inline" style="background:#fff" required></div>
-        <div class="form-group"><label>CNAE</label><input type="text" id="empresaCnae" class="input-inline" style="background:#fff" required></div>
+        <div class="form-group"><label>Nome Empresa</label><input type="text" id="empresaNome" class="input-inline" required></div>
+        <div class="form-group"><label>CNPJ</label><input type="text" id="empresaCnpj" class="input-inline" required></div>
+        <div class="form-group"><label>CNAE</label><input type="text" id="empresaCnae" class="input-inline" required></div>
       </div>
-      <div style="text-align: center; margin-top: 40px;">
-        <button type="submit" class="btn-submit-modal" style="padding: 12px 60px;">Salvar</button>
+      <div class="crm-form-submit-container">
+        <button type="submit" class="btn-submit-modal btn-large">Salvar</button>
       </div>
     </form>
   </div>

@@ -1,0 +1,111 @@
+/* ══════════════════════════════════════════
+   ESTRUTURA DOS MODAIS (CRM)
+   ══════════════════════════════════════════ */
+
+/* Camadas de sobreposição (z-index) */
+.sub-modal-overlay {
+    z-index: 3000;
+}
+.sub-modal-overlay.modal-top {
+    z-index: 3001; /* Usado para modais que abrem por cima de outros */
+}
+
+/* O "Card" do modal */
+.sub-modal-content {
+    position: relative; /* ISSO PRENDE O BOTÃO 'X' DENTRO DO CARD */
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 95vw;
+    background-color: #ffffff;
+}
+
+/* Variações de largura dos modais */
+.sub-modal-content.modal-large {
+    width: 850px;
+}
+.sub-modal-content.modal-medium {
+    width: 650px;
+}
+
+/* Botão de Fechar (X) */
+.btn-close-modal {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--icons, #666);
+    cursor: pointer;
+}
+
+/* Tipografia e Textos */
+.crm-modal-title {
+    text-align: center;
+    color: var(--light-font2);
+    font-size: 2rem;
+    margin-top: 0;
+}
+.title-margin-sm { margin-bottom: 10px; }
+.title-margin-lg { margin-bottom: 30px; }
+
+/* Botões de Ação */
+.crm-action-bar {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.crm-btn-add {
+    padding: 8px 24px;
+    font-size: 0.85rem;
+}
+.crm-form-submit-container {
+    text-align: center;
+    margin-top: 40px;
+}
+.btn-submit-modal.btn-large {
+    padding: 12px 60px;
+}
+
+/* ══════════════════════════════════════════
+   TABELAS DE LISTAGEM
+   ══════════════════════════════════════════ */
+.crm-table-container {
+    max-height: 50vh;
+    overflow-y: auto;
+}
+.crm-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+.crm-table thead {
+    background-color: #eef4d0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+.crm-table th {
+    padding: 12px;
+    color: var(--main);
+    font-size: 0.85rem;
+}
+.crm-table th.text-center {
+    text-align: center;
+}
+
+/* ══════════════════════════════════════════
+   FORMULÁRIOS INTERNOS
+   ══════════════════════════════════════════ */
+.crm-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+/* Força o fundo branco nos inputs específicos destes modais */
+.sub-modal-content .input-inline,
+.sub-modal-content .chips-field {
+    background-color: #ffffff;
+}
+.sub-modal-content select.input-inline {
+    height: 38px;
+}
