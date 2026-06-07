@@ -15,10 +15,11 @@
         <nav>
             <div class="nav_menu">
                 <h2>Menu</h2>
-                <a href="#"><i class="fa-brands fa-trello"></i>Processos</a>
+                <a href="{% url 'gerenciamento_processos' %}"><i class="fa-brands fa-trello"></i>Processos</a>
             </div>
             <div class="nav_geral">
                 <h2>Geral</h2>
+                <a href="{% url 'configuracoes' %}"><i class="fa-solid fa-gear"></i>Configurações</a>
                 <form action="{% url 'logout' %}" method="post" class="form-logout">
                     {% csrf_token %}
                     <button type="submit" class="btn-logout">
