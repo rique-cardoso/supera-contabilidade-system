@@ -1,0 +1,121 @@
+.container_alter-users {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 40px 60px 40px;
+    border-radius: 8px;
+    margin: 0 30px 30px 30px;
+}
+
+/* Divisão de Colunas
+*/
+.configuracoes_usuario,
+.criar_usuario {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cria a linha divisória sutil no meio */
+.configuracoes_usuario {
+    padding-right: 60px;
+    border-right: 1px solid #d0d2d6;
+}
+
+.criar_usuario {
+    padding-left: 60px;
+}
+
+/* Tipografia dos Títulos (h2)
+*/
+.container_alter-users h2 {
+    color: #333333;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 35px;
+}
+
+/* Grupos de Formulário e Labels
+*/
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    color: #8c8f94;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+/* Campos de Input e Select
+*/
+.input-inline {
+    width: 100%;
+    max-width: 380px;
+    padding: 12px 14px;
+    background-color: #dde0e6; /* Cinza preenchimento */
+    border: 1px solid #b8bac0; /* Borda cinza sutil */
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #333;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.input-inline:focus {
+    border-color: #172d44; /* Destaque ao clicar */
+    background-color: #e6e8ec;
+}
+
+/* Botões de Ação
+*/
+.btn-submit-modal {
+    background-color: #172d44; /* Azul marinho escuro */
+    color: #ffffff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    margin-top: 15px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    align-self: flex-start; /* Evita que o botão estique */
+}
+
+.btn-submit-modal:hover {
+    background-color: #0f1e2e;
+}
+
+.btn-submit-modal:active {
+    transform: translateY(1px);
+}
+
+/* Responsividade (Telas menores)
+*/
+@media (max-width: 850px) {
+    .container_alter-users {
+        flex-direction: column;
+        padding: 30px 20px;
+    }
+
+    .configuracoes_usuario {
+        padding-right: 0;
+        border-right: none;
+        border-bottom: 1px solid #d0d2d6;
+        padding-bottom: 40px;
+        margin-bottom: 40px;
+    }
+
+    .criar_usuario {
+        padding-left: 0;
+    }
+
+    .input-inline {
+        max-width: 100%;
+    }
+}
