@@ -1,12 +1,120 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.urls import reverse
 from datetime import date
 from processos.models import Processo, FaseProcesso, Vistoria, Anexo
 from clientes.models import Empresa
 from core.models import Usuario
 # Create your views here.
+
+@login_required
+def configuracoes(request):
+    """Renderiza a página de configurações."""
+    return render(request, 'configuracoes.html')
+
+@login_required
+@require_http_methods(["POST"])
+def atualizar_perfil(request):
+    """Permite que qualquer usuário atualize sua senha e e-mail."""
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        novo_email = data.get('email')
+        nova_senha = data.get('senha')
+        
+        if novo_email:
+            user.email = novo_email
+        if nova_senha:
+            user.set_password(nova_senha) # Criptografa a nova senha
+            
+        user.save()
+        return JsonResponse({'mensagem': 'Perfil atualizado com sucesso. Se alterou a senha, precisará fazer login novamente.'})
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=400)
+
+@login_required
+@require_http_methods(["POST"])
+def convidar_usuario(request):
+    """Exclusivo para ADMIN: Cria o usuário inativo e envia o link de convite."""
+    if request.user.role != 'admin':
+        return JsonResponse({'erro': 'Acesso negado. Apenas administradores podem convidar.'}, status=403)
+        
+    try:
+        data = json.loads(request.body)
+        nome = data.get('nome')
+        email = data.get('email')
+        role = data.get('role')
+        
+        if Usuario.objects.filter(email=email).exists():
+            return JsonResponse({'erro': 'Já existe um usuário com este e-mail.'}, status=400)
+
+        # Cria o usuário. Usamos o e-mail como username base para manter a unicidade
+        username_base = email.split('@')[0]
+        # Garante que o username seja único adicionando um sufixo caso já exista
+        username_final = username_base
+        contador = 1
+        while Usuario.objects.filter(username=username_final).exists():
+            username_final = f"{username_base}{contador}"
+            contador += 1
+
+        novo_usuario = Usuario.objects.create(
+            username=username_final,
+            first_name=nome,
+            email=email,
+            role=role,
+            is_active=False # Inativo até criar a senha!
+        )
+        novo_usuario.set_unusable_password() # Bloqueia logins sem senha
+        novo_usuario.save()
+
+        # --- GERAÇÃO DO LINK DE CONVITE ---
+        uid = urlsafe_base64_encode(force_bytes(novo_usuario.pk))
+        token = default_token_generator.make_token(novo_usuario)
+        link_relativo = reverse('aceitar_convite', kwargs={'uidb64': uid, 'token': token})
+        link_absoluto = request.build_absolute_uri(link_relativo)
+
+        # Envia o E-mail
+        assunto = 'Convite para acesso ao sistema Supera'
+        mensagem = f'Olá {nome},\n\nVocê foi convidado para acessar o sistema Supera. Clique no link abaixo para criar sua senha e ativar sua conta:\n\n{link_absoluto}'
+        send_mail(assunto, mensagem, None, [email])
+
+        return JsonResponse({'mensagem': 'Convite enviado com sucesso!'})
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=400)
+
+def aceitar_convite(request, uidb64, token):
+    """Página pública onde o usuário clica no link do e-mail para criar a senha."""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = Usuario.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+        user = None
+
+    # Verifica se o link é válido e não expirou
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            senha = request.POST.get('senha')
+            confirmacao = request.POST.get('confirmacao')
+            
+            if senha and senha == confirmacao:
+                user.set_password(senha)
+                user.is_active = True # Ativa o usuário
+                user.save()
+                return redirect('login') # Redireciona para o login após sucesso
+            else:
+                return render(request, 'aceitar_convite.html', {'erro': 'As senhas não coincidem.'})
+                
+        return render(request, 'aceitar_convite.html')
+    else:
+        return render(request, 'aceitar_convite.html', {'erro_link': 'Este link de convite é inválido ou já expirou.'})
 
 @login_required
 def gerenciamento_processos(request):

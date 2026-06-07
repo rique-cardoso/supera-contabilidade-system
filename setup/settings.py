@@ -140,3 +140,7 @@ LOGOUT_REDIRECT_URL = 'login'
 # Arquivos enviados por usuários (uploads)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Configuração de E-mail para Desenvolvimento (Imprime no Terminal)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'Supera Contabilidade <nao-responda@superacontabilidade.com.br>'

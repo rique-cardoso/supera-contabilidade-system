@@ -1,78 +1,21 @@
 /* ════════════════════════════════════════════════════════════════
    gerenciamento_processos.js
 
-   1. Utilitários
-   2. Estado do Modal
-   3. Kanban (drag-drop e scroll)
-   4. Modal Principal
-   5. Chips de Responsáveis
-   6. Empresa e Cliente
-   7. Fases do Processo
-   8. Vistorias
-   9. Processos Relacionados
-   10. Sub-modais (Endereço e Anexos)
-   11. Menus, Deleção e Filtros
-   12. CRM (Clientes e Empresas)
+   1. Estado do Modal
+   2. Kanban (drag-drop e scroll)
+   3. Modal Principal
+   4. Chips de Responsáveis
+   5. Empresa e Cliente
+   6. Fases do Processo
+   7. Vistorias
+   8. Processos Relacionados
+   9. Sub-modais (Endereço e Anexos)
+   10. Menus, Deleção e Filtros
+   11. CRM (Clientes e Empresas)
    ════════════════════════════════════════════════════════════════ */
 
-
 /* ══════════════════════════════════════════
-   1. UTILITÁRIOS
-   ══════════════════════════════════════════ */
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        document.cookie.split(';').forEach(cookie => {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            }
-        });
-    }
-    return cookieValue;
-}
-
-// Atrasa a execução de uma função — evita disparar uma request
-// a cada tecla digitada nos campos de busca
-function debounce(fn, delay) {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), delay);
-    };
-}
-
-// Clona o conteúdo de um <template> e retorna o elemento raiz.
-// Mais seguro e legível do que construir HTML como string no JS.
-function clonarTemplate(templateId) {
-    return document.getElementById(templateId).content.cloneNode(true).firstElementChild;
-}
-
-// Wrapper para fetch: injeta CSRF, define Content-Type quando necessário
-// e converte erros HTTP em exceções JS para tratamento uniforme com .catch()
-async function fetchJSON(url, options = {}) {
-    const headers = { 'X-CSRFToken': getCookie('csrftoken') };
-
-    // Não define Content-Type para FormData:
-    // o browser precisa definir sozinho para incluir o "boundary" do multipart
-    if (!(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-    }
-
-    const response = await fetch(url, { ...options, headers });
-
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.erro || `Erro HTTP ${response.status}`);
-    }
-
-    return response.json();
-}
-
-
-/* ══════════════════════════════════════════
-   2. ESTADO DO MODAL
+   1. ESTADO DO MODAL
    ══════════════════════════════════════════ */
 
 // Fonte de verdade centralizada — evita variáveis globais espalhadas.
@@ -89,7 +32,7 @@ const chipsSelecionados = new Map();
 
 
 /* ══════════════════════════════════════════
-   3. KANBAN — DRAG & DROP E SCROLL
+   2. KANBAN — DRAG & DROP E SCROLL
    ══════════════════════════════════════════ */
 
 let direcaoRolagem = 0;
@@ -184,7 +127,7 @@ motorDeRolagemAutomatica();
 
 
 /* ══════════════════════════════════════════
-   4. MODAL PRINCIPAL
+   3. MODAL PRINCIPAL
    ══════════════════════════════════════════ */
 
 function fecharModalProcesso() {
@@ -299,7 +242,7 @@ function popularBadgesHeader(data) {
 
 
 /* ══════════════════════════════════════════
-   5. CHIPS DE RESPONSÁVEIS
+   4. CHIPS DE RESPONSÁVEIS
    ══════════════════════════════════════════ */
 
 // Configurado UMA VEZ no DOMContentLoaded — os elementos são estáticos
@@ -410,7 +353,7 @@ function popularChipsIniciais(responsaveis) {
 
 
 /* ══════════════════════════════════════════
-   6. EMPRESA E CLIENTE
+   5. EMPRESA E CLIENTE
    ══════════════════════════════════════════ */
 
 // Chamado pelo onchange do <select id="id_empresa"> no HTML.
@@ -487,7 +430,7 @@ function limparCardCliente() {
 }
 
 /* ══════════════════════════════════════════
-   7. FASES DO PROCESSO (Refatorado)
+   6. FASES DO PROCESSO (Refatorado)
    ══════════════════════════════════════════ */
 
 function popularFases(fases) {
@@ -589,7 +532,7 @@ function salvarNovaFase(input, inputContainer, container, btnEl) {
 }
 
 /* ══════════════════════════════════════════
-   8. VISTORIAS
+   7. VISTORIAS
    ══════════════════════════════════════════ */
 
 function popularVistorias(vistorias) {
@@ -678,7 +621,7 @@ function salvarNovaVistoria() {
 
 
 /* ══════════════════════════════════════════
-   9. PROCESSOS RELACIONADOS
+   8. PROCESSOS RELACIONADOS
    ══════════════════════════════════════════ */
 
 // Configurado UMA VEZ no DOMContentLoaded
@@ -807,7 +750,7 @@ function popularRelacionados(relacionados) {
 
 
 /* ══════════════════════════════════════════
-   10. SUB-MODAIS
+   9. SUB-MODAIS
    ══════════════════════════════════════════ */
 
 // ─── Endereço ───────────────────────────
@@ -901,7 +844,7 @@ function inicializarUploadAnexo(itemId) {
 
 
 /* ══════════════════════════════════════════
-   11. MENUS, DELEÇÃO E FILTROS
+   10. MENUS, DELEÇÃO E FILTROS
    ══════════════════════════════════════════ */
 
 function toggleMenuOpcoes(event, processoId) {
@@ -970,7 +913,7 @@ btns_filtro.forEach(btn => {
 });
 
 /* ══════════════════════════════════════════
-   12. CRM (CLIENTES E EMPRESAS)
+   11. CRM (CLIENTES E EMPRESAS)
    ══════════════════════════════════════════ */
 
 // ─── LISTAGENS (Tabelas) ───

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Configurações | Supera{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="color: var(--light-font2); margin-bottom: 30px;">Configurações</h1>
+
+    <div style="background: white; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+        <h2 style="color: var(--main); margin-bottom: 20px;">Meu Perfil</h2>
+        <form id="formPerfil" onsubmit="atualizarPerfil(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="meuEmail" class="input-inline" value="{{ request.user.email }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Nova Senha (deixe em branco para não alterar)</label>
+                    <input type="password" id="minhaSenha" class="input-inline">
+                </div>
+            </div>
+            <button type="submit" class="btn-submit-modal" style="margin-top: 20px;">Salvar Alterações</button>
+        </form>
+    </div>
+
+    {% if request.user.role == 'admin' %}
+    <div style="background: white; padding: 30px; border-radius: 10px;">
+        <h2 style="color: var(--main); margin-bottom: 20px;">Convidar Novo Usuário da Equipe</h2>
+        <form id="formConvite" onsubmit="enviarConvite(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="conviteNome" class="input-inline" required>
+                </div>
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="conviteEmail" class="input-inline" required>
+                </div>
+                <div class="form-group form-group-full">
+                    <label>Papel no Sistema</label>
+                    <select id="conviteRole" class="input-inline" required>
+                        <option value="padrao">Usuário Padrão</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit-modal" style="margin-top: 20px; background-color: var(--secondary); color: var(--main);">Enviar Convite</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<script src="{% static 'scripts/configuracoes.js' }"></script>
+{% endblock %}

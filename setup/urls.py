@@ -24,6 +24,10 @@ from core.views import (
     obter_empresa_detalhes,
     buscar_processos,
     listar_anexos,
+    configuracoes,
+    atualizar_perfil,
+    convidar_usuario,
+    aceitar_convite,
     base
 )
 
@@ -33,6 +37,14 @@ urlpatterns = [
 
     # Rota raiz (home)
     path('', gerenciamento_processos, name='gerenciamento_processos'),
+
+    # Configurações e Perfil
+    path('configuracoes/', configuracoes, name='configuracoes'),
+    path('api/perfil/atualizar/', atualizar_perfil, name='atualizar_perfil'),
+    path('api/usuarios/convidar/', convidar_usuario, name='convidar_usuario'),
+
+    # Rota dinâmica para aceite do convite via E-mail
+    path('convite/<uidb64>/<token>/', aceitar_convite, name='aceitar_convite'),
 
     # Rotas de processos
     path('processos/criar/', criar_processo, name='criar_processo'),
