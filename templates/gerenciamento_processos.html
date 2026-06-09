@@ -11,14 +11,28 @@
 
 {% block content %}
 <aside class="filtro_processos">
-        <div class="container_filtros">
-            <button class="btn-filtro btn-filtro__actived" data-filtro="PREFEITURA">Prefeitura</button>
-            <button class="btn-filtro" data-filtro="BOMBEIROS">Bombeiros</button>
+    <div class="container_filtros">
+        <button class="btn-filtro btn-filtro__actived" data-filtro="PREFEITURA">Prefeitura</button>
+        <button class="btn-filtro" data-filtro="BOMBEIROS">Bombeiros</button>
+
+        {# Campo de busca global — IDs diferentes dos usados dentro do modal #}
+        <div class="busca-field">
+            <input type="text"
+                   id="buscaGlobalInput"
+                   class="busca-input"
+                   placeholder="Buscar processo..."
+                   autocomplete="off" />
+            <div id="buscaGlobalDropdown"
+                 class="busca-dropdown"
+                 style="display: none">
+            </div>
         </div>
-        <div class="container_empresas_clientes">
-            <button class="btn-criar-empresa_cliente" onclick="abrirModalListClientes()">Cliente</button>
-            <button class="btn-criar-empresa_cliente" onclick="abrirModalListEmpresas()">Empresa</button>
-        </div>
+    </div>
+
+    <div class="container_empresas_clientes">
+        <button class="btn-criar-empresa_cliente" onclick="abrirModalListClientes()">Cliente</button>
+        <button class="btn-criar-empresa_cliente" onclick="abrirModalListEmpresas()">Empresa</button>
+    </div>
 </aside>
 <div class="kanban-wrapper">
     

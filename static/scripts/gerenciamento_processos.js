@@ -12,6 +12,7 @@
    9. Sub-modais (Endereço e Anexos)
    10. Menus, Deleção e Filtros
    11. CRM (Clientes e Empresas)
+   12. Busca Global de Processos
    ════════════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════
@@ -71,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // configurados uma única vez, não a cada abertura do modal)
   inicializarChips();
   inicializarBuscaRelacionado();
-
+  inicializarBuscaGlobal();
   // Aplica o filtro inicial conforme o botão ativo no HTML
   aplicarFiltro();
 
@@ -1376,4 +1377,93 @@ function salvarEmpresa(e) {
       abrirModalListEmpresas();
     })
     .catch((err) => alert(err.message));
+}
+/* ══════════════════════════════════════════
+   12. BUSCA GLOBAL DE PROCESSOS (barra de filtros)
+   Mesmo endpoint e visual da busca do modal,
+   mas ao clicar abre o modal de edição
+   em vez de relacionar ao processo atual.
+   ══════════════════════════════════════════ */
+
+function inicializarBuscaGlobal() {
+    const input    = document.getElementById('buscaGlobalInput');
+    const dropdown = document.getElementById('buscaGlobalDropdown');
+
+    // Defesa: se os elementos não existirem na página, encerra silenciosamente
+    if (!input || !dropdown) return;
+
+    const buscarComDebounce = debounce(buscarProcessosGlobal, 350);
+
+    input.addEventListener('input', () => {
+        buscarComDebounce(input.value.trim());
+    });
+
+    // Reexibe o dropdown ao focar se já houver texto suficiente
+    input.addEventListener('focus', () => {
+        if (input.value.trim().length >= 2) {
+            buscarProcessosGlobal(input.value.trim());
+        }
+    });
+
+    // Fecha o dropdown ao clicar fora do campo
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#buscaGlobalInput') &&
+            !e.target.closest('#buscaGlobalDropdown')) {
+            dropdown.style.display = 'none';
+        }
+    });
+}
+
+function buscarProcessosGlobal(termo) {
+    const dropdown = document.getElementById('buscaGlobalDropdown');
+
+    if (termo.length < 2) {
+        dropdown.style.display = 'none';
+        return;
+    }
+
+    // Sem excluir_id: na busca global queremos ver todos os processos
+    const params = new URLSearchParams({ q: termo });
+
+    fetchJSON(`/api/processos/buscar/?${params}`)
+        .then(data => renderizarDropdownGlobal(data.processos))
+        .catch(err => console.error('Erro na busca global:', err));
+}
+
+function renderizarDropdownGlobal(processos) {
+    const dropdown = document.getElementById('buscaGlobalDropdown');
+    dropdown.innerHTML = '';
+
+    if (processos.length === 0) {
+        dropdown.innerHTML =
+            '<div class="busca-dropdown-item" style="pointer-events:none;color:var(--icons)">Nenhum processo encontrado</div>';
+        dropdown.style.display = 'block';
+        return;
+    }
+
+    processos.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'busca-dropdown-item';
+
+        // Mesmo template visual da busca do modal
+        item.innerHTML = `
+            <div class="busca-dropdown-item-info">
+                <span>${p.nome}</span>
+                <span class="busca-dropdown-item-empresa">${p.empresa} · ${p.protocolo}</span>
+            </div>
+        `;
+
+        item.addEventListener('click', () => {
+            // Comportamento diferente: abre o modal de edição
+            editarProcesso(p.id);
+
+            // Limpa e fecha o campo de busca após a seleção
+            document.getElementById('buscaGlobalInput').value = '';
+            dropdown.style.display = 'none';
+        });
+
+        dropdown.appendChild(item);
+    });
+
+    dropdown.style.display = 'block';
 }
