@@ -62,13 +62,19 @@ main {
     margin-bottom: 10px;
 }
 
-.container_form p{
+.container_form a{
     display: inline-block;
     cursor: pointer;
+    text-decoration: none;
     color: var(--secondary);
     margin-bottom: 3em;
     border-bottom: 1px solid transparent;
-    transition: color .5s, border-bottom-color .5s;
+    transition: all .5s, border-bottom-color .5s;
+}
+
+.container_form a:hover{
+    color: var(--main);
+    text-decoration: underline;
 }
 
 .container_form p:hover{

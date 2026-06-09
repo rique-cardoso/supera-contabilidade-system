@@ -39,7 +39,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Rota raiz (home)
-    path('gerenciamento_processos', gerenciamento_processos, name='gerenciamento_processos'),
+    path("dashboard/", dashboard, name="dashboard"),
 
     # Configurações e Perfil
     path('configuracoes/', configuracoes, name='configuracoes'),
@@ -50,6 +50,7 @@ urlpatterns = [
     path('convite/<uidb64>/<token>/', aceitar_convite, name='aceitar_convite'),
 
     # Rotas de processos
+    path('gerenciamento_processos', gerenciamento_processos, name='gerenciamento_processos'),
     path('processos/criar/', criar_processo, name='criar_processo'),
     path('processos/<int:processo_id>/editar/', editar_processo, name='editar_processo'),
     path('processos/<int:processo_id>/deletar/', deletar_processo, name='deletar_processo'),
@@ -87,7 +88,6 @@ urlpatterns = [
     path('api/empresas/<int:empresa_id>/salvar/', salvar_empresa, name='editar_empresa'),
 
     # Dashboard
-    path('dashboard/', dashboard, name='dashboard'),
     path('api/notificacoes/<int:notificacao_id>/lida/', marcar_notificacao_lida, name='marcar_notificacao_lida'),
 
     # Rotas de autenticação
@@ -96,6 +96,30 @@ urlpatterns = [
         authentication_form=CustomLoginForm # Adicione esta linha
     ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    # Rotas Redefinição de Senha
+
+    # 1. Tela para solicitar a redefinição (Digitar o e-mail)
+    path('recuperar-senha/', auth_views.PasswordResetView.as_view(
+        template_name='recuperar_senha/password_reset_form.html',
+        email_template_name='recuperar_senha/password_reset_email.html',
+        subject_template_name='recuperar_senha/password_reset_subject.txt'
+    ), name='password_reset'),
+
+    # 2. Tela de aviso (E-mail enviado com sucesso)
+    path('recuperar-senha/enviado/', auth_views.PasswordResetDoneView.as_view(
+        template_name='recuperar_senha/password_reset_done.html'
+    ), name='password_reset_done'),
+
+    # 3. Tela de nova senha (Acessada pelo link do e-mail)
+    path('recuperar-senha/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='recuperar_senha/password_reset_confirm.html'
+    ), name='password_reset_confirm'),
+
+    # 4. Tela de confirmação (Senha alterada com sucesso)
+    path('recuperar-senha/concluido/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='recuperar_senha/password_reset_complete.html'
+    ), name='password_reset_complete'),
 
     # Rotas para testes
     path('base/', base, name='base'),

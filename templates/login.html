@@ -34,7 +34,7 @@
                     <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label> {{ form.password }} {% if form.password.errors %}
                     <span class="erro">{{ form.password.errors }}</span> {% endif %}
                 </div>
-                <p>Esqueci minha senha</p>
+                <a href="{% url 'password_reset' %}">Esqueci minha senha</a href="{% url 'password_reset' %}">
                 <button type="submit">Entrar</button>
             </form>
         </div>
