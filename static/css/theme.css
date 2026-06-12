@@ -20,6 +20,7 @@
     --table-empresa-td: #f5f9e8;
     --table-cliente: #cbdfe9;
     --table-cliente-td: #f0f2f3;
+    --background-select: transparent;
 }
 
 [data-theme="dark"] {
@@ -31,5 +32,6 @@
     --table-empresa-td: #acb87d;
     --table-cliente: #4a758a;
     --table-cliente-td: #8ea6b1;
+    --background-select: #353535;
     /* Mantenha as cores de status (st-ativo, etc) inalteradas ou ajuste conforme a necessidade */
 }

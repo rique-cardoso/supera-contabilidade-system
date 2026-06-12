@@ -253,7 +253,7 @@
     font-size: 0.875rem;
     font-family: inherit;
     color: var(--light-font2);
-    background: #353535;
+    background: var(--background-select);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
