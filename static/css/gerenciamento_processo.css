@@ -50,7 +50,7 @@ main.conteudo_principal {
 }
 
 .btn-filtro__actived{
-    color: #fff;
+    color: var(--background-doc);
     background-color: var(--secondary);
     border: none;
 }
@@ -86,7 +86,7 @@ main.conteudo_principal {
     flex-direction: column;
     border-radius: 15px;
     overflow: hidden;
-    background-color: #fff; /* Fundo padrão antes de aplicar a opacidade */
+    background-color: var(--background-doc); /* Fundo padrão antes de aplicar a opacidade */
 }
 
 .column-header {
@@ -253,7 +253,7 @@ main.conteudo_principal {
 .card-titulo {
     font-size: 1rem;
     font-weight: 800;
-    color: var(--light-font2);
+    color: #353535;
     cursor: pointer;
     transition: opacity 0.2s ease;
 }
@@ -289,7 +289,7 @@ main.conteudo_principal {
     gap: 8px;
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--light-font);
+    color: #353535;
 }
 
 .card-categoria i, .card-meta i {
@@ -354,7 +354,7 @@ main.conteudo_principal {
     position: absolute;
     right: 0;
     top: 100%;
-    background-color: #fff;
+    background-color: var(--background-doc);
     min-width: 170px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 10;
@@ -370,7 +370,7 @@ main.conteudo_principal {
 
 /* Estilo dos links dentro do dropdown */
 .dropdown-conteudo a{
-    color: #333333;
+    color: var(--light-font);
     padding: 10px 14px;
     text-decoration: none;
     display: block;
@@ -379,7 +379,7 @@ main.conteudo_principal {
 }
 
 .dropdown-conteudo a:hover{
-    background-color: #F5F5F5;
+    background-color: var(--secondary);
 }
 
 /* Estilo específico para o botão de apagar definitivo do admin */

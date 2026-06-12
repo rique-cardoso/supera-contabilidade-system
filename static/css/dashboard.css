@@ -28,7 +28,7 @@ main.conteudo_principal {
 
 /* O card é um <a>, então precisamos remover a estilização padrão de link */
 .summary-card {
-    background: #fff;
+    background: var(--background-doc);
     border-radius: 15px;
     padding: 20px;
     display: flex;
@@ -116,7 +116,7 @@ main.conteudo_principal {
 
 /* Painel genérico (caixinha branca com borda) */
 .dashboard-panel {
-    background: #fff;
+    background: var(--background-doc);
     border-radius: 15px;
     padding: 20px;
     border: 1px solid #e8e8e8;
@@ -288,7 +288,7 @@ main.conteudo_principal {
     padding: 18px 20px;
     padding-right: 44px;     /* espaço para não sobrepor o botão × */
     border-radius: 12px;
-    background: #fff;
+    background: var(--background-doc);
     border: 1px solid #ebebeb;
     /* Borda esquerda colorida — identifica a categoria visualmente */
     border-left-width: 5px;

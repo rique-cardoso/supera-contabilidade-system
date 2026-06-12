@@ -3,6 +3,7 @@ body {
     height: 100vh;
     display: grid;
     grid-template-columns: 500px 2fr;
+    background-color: var(--background-doc);
 }
 
 header {
@@ -56,6 +57,8 @@ main {
     border: 1px solid var(--contour-form);
     padding: 0 15px;
     border-radius: 10px;
+    background-color: transparent;
+    color: var(--light-font2);
 }
 
 .campo_form{

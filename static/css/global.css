@@ -9,30 +9,12 @@
   font-family: 'Inter', sans-serif;
 }
 
-:root{
-    --main: #102A43;
-    --main-background: #102A4326;
-    --secondary: #B9D037;
-    --light-font: #424242;
-    --light-font2: #353535;
-    --contour-form: #B6B6B6;
-    --area-background: #35353526;
-    --st-ativo: #0068DF;
-    --st-vencendo: #CEB13C;
-    --st-vencido: #C23134;
-    --st-concluido: #35B744;
-    --st-ativo-background: #0068DF26;
-    --st-vencendo-background: #CEB13C26;
-    --st-vencido-background: #C2313426;
-    --st-concluido-background: #35B74426;
-    --icons: #A2A2A2;
-}
-
 body{
   height: 100vh;
   display: grid;
   grid-template-columns: 350px 1fr;
   gap: 20px;
+  background-color: var(--background-doc);
 }
 
 header.cabecalho_principal{
@@ -46,13 +28,41 @@ header.cabecalho_principal, main.conteudo_principal{
 }
 
 header.cabecalho_principal > div.container_logo{
-  padding: 30px 50px;
+  padding: 30px 50px 0px 30px;
 }
 
 header.cabecalho_principal > div.container_logo > img{
   display: block;
   margin: auto;
   width: 100%;
+}
+
+div.theme-toggle-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+button.theme-btn{
+  color: var(--main);
+  font-weight: bold;
+  width: 95px;
+  height: 45px;
+  background-color: transparent;
+  border: 1px solid var(--main);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .3s ease-in-out;
+}
+
+button.theme-btn:hover{
+  box-shadow: 2px 4px 5px var(--main-background);
+}
+
+button.theme-btn.active{
+  background-color: var(--secondary);
+  border: none;
 }
 
 div.nav_menu{

@@ -16,7 +16,7 @@
     padding: 15px;
     border-radius: 20px;
     max-width: 95vw;
-    background-color: #ffffff;
+    background-color: var(--background-doc);
 }
 
 /* Variações de largura dos modais */
@@ -101,7 +101,7 @@
 /* Força o fundo branco nos inputs específicos destes modais */
 .sub-modal-content .input-inline,
 .sub-modal-content .chips-field {
-    background-color: #ffffff;
+    background-color: var(--background-doc);
 }
 .sub-modal-content select.input-inline {
     height: 38px;

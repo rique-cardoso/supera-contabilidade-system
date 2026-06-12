@@ -52,3 +52,35 @@ async function fetchJSON(url, options = {}) {
     return response.json();
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const btnLight = document.getElementById('btn-light');
+    const btnDark = document.getElementById('btn-dark');
+
+    // Função que aplica o tema visualmente e salva no LocalStorage
+    function setTema(tema) {
+        // Altera o atributo no HTML
+        document.documentElement.setAttribute('data-theme', tema);
+        
+        // Salva a escolha no cache do navegador
+        localStorage.setItem('tema', tema);
+
+        // Atualiza a interface dos botões
+        if (tema === 'dark') {
+            btnDark.classList.add('active');
+            btnLight.classList.remove('active');
+        } else {
+            btnLight.classList.add('active');
+            btnDark.classList.remove('active');
+        }
+    }
+
+    // Inicializa os botões com base no tema salvo atual (garante o estado visual correto)
+    const temaAtual = document.documentElement.getAttribute('data-theme');
+    setTema(temaAtual);
+
+    // Adiciona os eventos de clique
+    if (btnLight && btnDark) {
+        btnLight.addEventListener('click', () => setTema('light'));
+        btnDark.addEventListener('click', () => setTema('dark'));
+    }
+});

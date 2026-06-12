@@ -1,0 +1,35 @@
+:root{
+    --main: #102A43;
+    --main-background: #102A4326;
+    --secondary: #B9D037;
+    --light-font: #424242;
+    --light-font2: #353535;
+    --contour-form: #B6B6B6;
+    --area-background: #35353526;
+    --st-ativo: #0068DF;
+    --st-vencendo: #CEB13C;
+    --st-vencido: #C23134;
+    --st-concluido: #35B744;
+    --st-ativo-background: #0068DF26;
+    --st-vencendo-background: #CEB13C26;
+    --st-vencido-background: #C2313426;
+    --st-concluido-background: #35B74426;
+    --icons: #A2A2A2;
+    --background-doc: #ffffff;
+    --table-empresa: #eef4d0;
+    --table-empresa-td: #f5f9e8;
+    --table-cliente: #cbdfe9;
+    --table-cliente-td: #f0f2f3;
+}
+
+[data-theme="dark"] {
+    --main: #44916f;
+    --light-font: #E0E0E0;
+    --light-font2: #F5F5F5;
+    --background-doc: #353535;
+    --table-empresa: #8f9b50;
+    --table-empresa-td: #acb87d;
+    --table-cliente: #4a758a;
+    --table-cliente-td: #8ea6b1;
+    /* Mantenha as cores de status (st-ativo, etc) inalteradas ou ajuste conforme a necessidade */
+}

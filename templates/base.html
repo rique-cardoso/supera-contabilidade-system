@@ -6,12 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Base | Teste{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <script src="https://kit.fontawesome.com/bf92c72d09.js" crossorigin="anonymous"></script>
+    <script>
+        const temaSalvo = localStorage.getItem('tema') || 'light';
+        document.documentElement.setAttribute('data-theme', temaSalvo);
+    </script>
     {% block extra_css %}{% endblock %}
 </head>
 <body style="padding: 20px">
     <header class="cabecalho_principal">
         <div class="container_logo"><img src="{% static 'img/logo-header.png' %}" alt="Logo Supera Contabilidade"></div>
+        <div class="theme-toggle-container">
+            <button id="btn-light" class="theme-btn"><i class="fa-solid fa-sun"></i> Light</button>
+            <button id="btn-dark" class="theme-btn"><i class="fa-solid fa-moon"></i> Dark</button>
+        </div>
         <nav>
             <div class="nav_menu">
                 <h2>Menu</h2>
