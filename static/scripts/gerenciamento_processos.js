@@ -1211,37 +1211,103 @@ function salvarCliente(e) {
 }
 
 function abrirModalFormEmpresa(empresa = null) {
-  document.getElementById("formEmpresa").reset();
+    document.getElementById("formEmpresa").reset();
 
-  // Popula o select de Clientes antes de abrir
-  fetchJSON("/api/clientes/").then((data) => {
-    const sel = document.getElementById("empresaClienteSelect");
-    sel.innerHTML = '<option value="">Selecione o Cliente</option>';
-    data.clientes.forEach((c) => {
-      sel.innerHTML += `<option value="${c.id}">${c.nome_responsavel}</option>`;
+    // Garante a limpeza dos campos opcionais de endereço ao abrir
+    document.getElementById("empresaCep").value = "";
+    document.getElementById("empresaLogradouro").value = "";
+    document.getElementById("empresaNumero").value = "";
+    document.getElementById("empresaComplemento").value = "";
+    document.getElementById("empresaBairro").value = "";
+    document.getElementById("empresaCidade").value = "";
+    document.getElementById("empresaEstado").value = "";
+
+    // Popula o select de Clientes antes de abrir
+    fetchJSON("/api/clientes/").then((data) => {
+        const sel = document.getElementById("empresaClienteSelect");
+
+        sel.innerHTML = '<option value="">Selecione o Cliente</option>';
+
+        data.clientes.forEach((c) => {
+            sel.innerHTML += `<option value="${c.id}">${c.nome_responsavel}</option>`;
+        });
+
+        if (empresa) {
+            document.getElementById("formEmpresaId").value = empresa.id;
+            document.getElementById("empresaNome").value = empresa.nome_empresa;
+            document.getElementById("empresaCnpj").value = empresa.cnpj;
+            document.getElementById("empresaCnae").value = empresa.cnae;
+
+            sel.value = empresa.cliente_id;
+
+            // Se a empresa vinda do banco já possuir endereço, popula o formulário
+            if (empresa.endereco) {
+                document.getElementById("empresaCep").value =
+                    empresa.endereco.cep || "";
+                document.getElementById("empresaLogradouro").value =
+                    empresa.endereco.logradouro || "";
+                document.getElementById("empresaNumero").value =
+                    empresa.endereco.numero || "";
+                document.getElementById("empresaComplemento").value =
+                    empresa.endereco.complemento || "";
+                document.getElementById("empresaBairro").value =
+                    empresa.endereco.bairro || "";
+                document.getElementById("empresaCidade").value =
+                    empresa.endereco.cidade || "";
+                document.getElementById("empresaEstado").value =
+                    empresa.endereco.estado || "";
+            }
+        } else {
+            document.getElementById("formEmpresaId").value = "";
+        }
+
+        document.getElementById("modalFormEmpresa").style.display = "flex";
     });
-
-    if (empresa) {
-      document.getElementById("formEmpresaId").value = empresa.id;
-      document.getElementById("empresaNome").value = empresa.nome_empresa;
-      document.getElementById("empresaCnpj").value = empresa.cnpj;
-      document.getElementById("empresaCnae").value = empresa.cnae;
-      sel.value = empresa.cliente_id;
-    } else {
-      document.getElementById("formEmpresaId").value = "";
-    }
-    document.getElementById("modalFormEmpresa").style.display = "flex";
-  });
 }
 
 function salvarEmpresa(e) {
   e.preventDefault();
+
+  // Validação Front-end Básica dos campos obrigatórios
+  const cnpjRaw = document.getElementById("empresaCnpj").value.replace(/\D/g, '');
+  const cnaeRaw = document.getElementById("empresaCnae").value.replace(/\D/g, '');
+  
+  if (cnpjRaw.length !== 14) return alert("Por favor, preencha o CNPJ corretamente (14 dígitos).");
+  if (cnaeRaw.length !== 7) return alert("Por favor, preencha o CNAE corretamente (7 dígitos).");
+
+  // Captura e verificação dos campos de endereço
+  const cepRaw = document.getElementById("empresaCep").value.replace(/\D/g, '');
+  const logradouro = document.getElementById("empresaLogradouro").value.trim();
+  
+  // Se o usuário preencher o CEP ou o Logradouro, o bloco de endereço torna-se obrigatório
+  const preencheuEndereco = cepRaw.length > 0 || logradouro.length > 0;
+  
+  if (preencheuEndereco) {
+      if (cepRaw.length !== 8) return alert("Para salvar o endereço, preencha o CEP corretamente (8 números).");
+      if (!logradouro) return alert("O campo Logradouro é obrigatório caso queira salvar o endereço.");
+      if (!document.getElementById("empresaNumero").value.trim()) return alert("O campo Número é obrigatório.");
+      if (!document.getElementById("empresaBairro").value.trim()) return alert("O campo Bairro é obrigatório.");
+      if (!document.getElementById("empresaCidade").value.trim()) return alert("O campo Cidade é obrigatório.");
+      if (document.getElementById("empresaEstado").value.trim().length !== 2) return alert("Preencha o Estado (UF) com duas letras.");
+  }
+
   const id = document.getElementById("formEmpresaId").value;
+  
+  // Montagem do payload estruturado com o nó de endereço
   const body = {
     cliente_id: document.getElementById("empresaClienteSelect").value,
     nome_empresa: document.getElementById("empresaNome").value,
     cnpj: document.getElementById("empresaCnpj").value,
     cnae: document.getElementById("empresaCnae").value,
+    endereco: preencheuEndereco ? {
+        cep: document.getElementById("empresaCep").value,
+        logradouro: logradouro,
+        numero: document.getElementById("empresaNumero").value.trim(),
+        complemento: document.getElementById("empresaComplemento").value.trim(),
+        bairro: document.getElementById("empresaBairro").value.trim(),
+        cidade: document.getElementById("empresaCidade").value.trim(),
+        estado: document.getElementById("empresaEstado").value.trim().toUpperCase()
+    } : null
   };
 
   fetchJSON(id ? `/api/empresas/${id}/salvar/` : `/api/empresas/salvar/`, {
@@ -1250,7 +1316,7 @@ function salvarEmpresa(e) {
   })
     .then(() => {
       fecharModalFormEmpresa();
-      abrirModalListEmpresas(); // Atualiza a tabela
+      abrirModalListEmpresas(); // Atualiza a tabela de listagem
     })
     .catch((err) => alert(err.message));
 }
@@ -1301,6 +1367,18 @@ const mascaras = {
             .replace(/^(\d{4})(\d)/, '$1-$2')     // Coloca o traço após os 4 primeiros dígitos
             .replace(/^(\d{4}-\d)(\d)/, '$1/$2')  // Coloca a barra após o 5º dígito
             .substring(0, 9);                     // Garante o tamanho máximo de 0000-0/00
+    },
+    cep(valor) {
+        return valor
+            .replace(/\D/g, '')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .substring(0, 9);
+    },
+    estado(valor) {
+        return valor
+            .replace(/[^a-zA-Z]/g, '') // Remove o que não for letra
+            .toUpperCase()
+            .substring(0, 2);
     }
 };
 
@@ -1311,7 +1389,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const inTel = document.getElementById('clienteTelefone');
     const inCnpj = document.getElementById('empresaCnpj');
     const inCnae = document.getElementById('empresaCnae');
-
+    const inCep = document.getElementById('empresaCep');
+    const inEstado = document.getElementById('empresaEstado');
+    
+    if(inCep) inCep.addEventListener('input', (e) => { e.target.value = mascaras.cep(e.target.value); });
+    if(inEstado) inEstado.addEventListener('input', (e) => { e.target.value = mascaras.estado(e.target.value); });
     if(inCpf) inCpf.addEventListener('input', (e) => { e.target.value = mascaras.cpf(e.target.value); });
     if(inTel) inTel.addEventListener('input', (e) => { e.target.value = mascaras.telefone(e.target.value); });
     if(inCnpj) inCnpj.addEventListener('input', (e) => { e.target.value = mascaras.cnpj(e.target.value); });
@@ -1346,35 +1428,6 @@ function salvarCliente(e) {
     .then(() => {
       fecharModalFormCliente();
       abrirModalListClientes();
-    })
-    .catch((err) => alert(err.message));
-}
-
-function salvarEmpresa(e) {
-  e.preventDefault();
-
-  // Validação Front-end Básica
-  const cnpjRaw = document.getElementById("empresaCnpj").value.replace(/\D/g, '');
-  const cnaeRaw = document.getElementById("empresaCnae").value.replace(/\D/g, '');
-  
-  if (cnpjRaw.length !== 14) return alert("Por favor, preencha o CNPJ corretamente (14 dígitos).");
-  if (cnaeRaw.length !== 7) return alert("Por favor, preencha o CNAE corretamente (7 dígitos).");
-
-  const id = document.getElementById("formEmpresaId").value;
-  const body = {
-    cliente_id: document.getElementById("empresaClienteSelect").value,
-    nome_empresa: document.getElementById("empresaNome").value,
-    cnpj: document.getElementById("empresaCnpj").value,
-    cnae: document.getElementById("empresaCnae").value,
-  };
-
-  fetchJSON(id ? `/api/empresas/${id}/salvar/` : `/api/empresas/salvar/`, {
-    method: id ? "PUT" : "POST",
-    body: JSON.stringify(body),
-  })
-    .then(() => {
-      fecharModalFormEmpresa();
-      abrirModalListEmpresas();
     })
     .catch((err) => alert(err.message));
 }

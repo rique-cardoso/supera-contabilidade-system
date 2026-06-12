@@ -24,23 +24,6 @@ def listar_clientes(request):
         })
     return JsonResponse({'clientes': data})
 
-@login_required
-@require_http_methods(["GET"])
-def listar_empresas(request):
-    """Retorna todas as empresas e o nome do cliente associado."""
-    empresas = Empresa.objects.select_related('cliente').all().order_by('-data_criacao')
-    data = []
-    for e in empresas:
-        data.append({
-            'id': e.id,
-            'nome_empresa': e.nome_empresa,
-            'cnpj': e.cnpj,
-            'cnae': e.cnae,
-            'cliente_id': e.cliente.id if e.cliente else None,
-            'cliente_nome': e.cliente.nome_responsavel if e.cliente else '',
-            'data_criacao': e.data_criacao.strftime('%b %d, %Y, %I:%M %p')
-        })
-    return JsonResponse({'empresas': data})
 
 @login_required
 @require_http_methods(["POST", "PUT"])
@@ -74,12 +57,43 @@ def salvar_cliente(request, cliente_id=None):
         return JsonResponse({'erro': str(e)}, status=400)
 
 @login_required
+@require_http_methods(["GET"])
+def listar_empresas(request):
+    """Retorna todas as empresas, o nome do cliente e os dados de endereço associados."""
+    # O uso do select_related('endereco') evita múltiplas consultas pesadas ao banco (N+1)
+    empresas = Empresa.objects.select_related('cliente', 'endereco').all().order_by('-data_criacao')
+    data = []
+    for e in empresas:
+        # Verifica se a empresa possui um endereço cadastrado na relação OneToOne
+        has_endereco = hasattr(e, 'endereco') and e.endereco is not None
+        
+        data.append({
+            'id': e.id,
+            'nome_empresa': e.nome_empresa,
+            'cnpj': e.cnpj,
+            'cnae': e.cnae,
+            'cliente_id': e.cliente.id if e.cliente else None,
+            'cliente_nome': e.cliente.nome_responsavel if e.cliente else '',
+            'data_criacao': e.data_criacao.strftime('%b %d, %Y, %I:%M %p'),
+            'endereco': {
+                'logradouro': e.endereco.logradouro,
+                'numero': e.endereco.numero,
+                'complemento': e.endereco.complemento,
+                'bairro': e.endereco.bairro,
+                'cidade': e.endereco.cidade,
+                'estado': e.endereco.estado,
+                'cep': e.endereco.cep,
+            } if has_endereco else None
+        })
+    return JsonResponse({'empresas': data})
+
+@login_required
 @require_http_methods(["POST", "PUT"])
 def salvar_empresa(request, empresa_id=None):
+    """Cria ou edita uma Empresa tratando o relacionamento opcional de Endereço."""
     try:
         data = json.loads(request.body)
         
-        # Validação Backend de CNPJ e CNAE
         cnpj_str = data.get('cnpj', '')
         cnae_str = data.get('cnae', '')
         
@@ -101,10 +115,39 @@ def salvar_empresa(request, empresa_id=None):
             empresa = Empresa()
 
         empresa.nome_empresa = data.get('nome_empresa')
-        empresa.cnpj = cnpj_str # Salva com a máscara
-        empresa.cnae = cnae_str # Salva com a máscara
+        empresa.cnpj = cnpj_str
+        empresa.cnae = cnae_str
         empresa.cliente = cliente
         empresa.save()
+
+        # --- PROCESSAMENTO DO ENDEREÇO (OPCIONAL) ---
+        endereco_data = data.get('endereco')
+        
+        if endereco_data:
+            # Validação Backend de Segurança para o CEP do endereço
+            cep_str = endereco_data.get('cep', '')
+            if len(re.sub(r'\D', '', cep_str)) != 8:
+                return JsonResponse({'erro': 'O CEP do endereço deve conter exatamente 8 números.'}, status=400)
+            
+            # Utiliza o método update_or_create para gerenciar o vínculo OneToOne de forma nativa
+            from .models import EnderecoEmpresa
+            EnderecoEmpresa.objects.update_or_create(
+                empresa=empresa,
+                defaults={
+                    'logradouro': endereco_data.get('logradouro'),
+                    'numero': endereco_data.get('numero'),
+                    'complemento': endereco_data.get('complemento'),
+                    'bairro': endereco_data.get('bairro'),
+                    'cidade': endereco_data.get('cidade'),
+                    'estado': endereco_data.get('estado'),
+                    'cep': cep_str
+                }
+            )
+        else:
+            # Se a requisição veio sem endereço e a empresa já existia, removemos qualquer registro antigo
+            # Isso possibilita que o usuário apague o endereço de uma empresa na edição se assim desejar
+            from .models import EnderecoEmpresa
+            EnderecoEmpresa.objects.filter(empresa=empresa).delete()
 
         return JsonResponse({'id': empresa.id, 'mensagem': 'Empresa salva com sucesso'})
     except Exception as e:

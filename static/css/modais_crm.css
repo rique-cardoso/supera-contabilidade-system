@@ -13,7 +13,7 @@
 /* O "Card" do modal */
 .sub-modal-content {
     position: relative; /* ISSO PRENDE O BOTÃO 'X' DENTRO DO CARD */
-    padding: 40px;
+    padding: 15px;
     border-radius: 20px;
     max-width: 95vw;
     background-color: #ffffff;
@@ -46,9 +46,6 @@
     font-size: 2rem;
     margin-top: 0;
 }
-.title-margin-sm { margin-bottom: 10px; }
-.title-margin-lg { margin-bottom: 30px; }
-
 /* Botões de Ação */
 .crm-action-bar {
     text-align: center;
