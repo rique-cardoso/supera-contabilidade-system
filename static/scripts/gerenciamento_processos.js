@@ -1188,28 +1188,6 @@ function abrirModalFormCliente(cliente = null) {
   document.getElementById("modalFormCliente").style.display = "flex";
 }
 
-function salvarCliente(e) {
-  e.preventDefault();
-  const id = document.getElementById("formClienteId").value;
-  const body = {
-    nome_responsavel: document.getElementById("clienteNome").value,
-    telefone: document.getElementById("clienteTelefone").value,
-    email: document.getElementById("clienteEmail").value,
-    cpf: document.getElementById("clienteCpf").value,
-    empresas: Array.from(chipsEmpresasClient.keys()),
-  };
-
-  fetchJSON(id ? `/api/clientes/${id}/salvar/` : `/api/clientes/salvar/`, {
-    method: id ? "PUT" : "POST",
-    body: JSON.stringify(body),
-  })
-    .then(() => {
-      fecharModalFormCliente();
-      abrirModalListClientes(); // Atualiza a tabela com o recém-salvo
-    })
-    .catch((err) => alert(err.message));
-}
-
 function abrirModalFormEmpresa(empresa = null) {
     document.getElementById("formEmpresa").reset();
 
@@ -1399,8 +1377,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(inCnae) inCnae.addEventListener('input', (e) => { e.target.value = mascaras.cnae(e.target.value); });
 });
 
-// ─── SUBSTITUA AS FUNÇÕES DE SALVAR ORIGINAIS POR ESTAS ───
-
 function salvarCliente(e) {
   e.preventDefault();
   
@@ -1425,8 +1401,7 @@ function salvarCliente(e) {
     body: JSON.stringify(body),
   })
     .then(() => {
-      fecharModalFormCliente();
-      abrirModalListClientes();
+      window.location.reload();
     })
     .catch((err) => alert(err.message));
 }
