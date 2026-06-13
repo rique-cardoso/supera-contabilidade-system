@@ -28,14 +28,46 @@ supera/
 │
 ├── setup/                # Configurações globais do projeto (settings, urls)
 ├── core/                 # App principal (models, views, lógica de negócio)
+├── clientes/
+├── notificacoes/
+├── processos/            
 │
 ├── templates/            # Templates HTML globais
+│   └── partials/
+│       └── card_processo.html
+│       └── modais_crm.html
+│       └── modal_processo.html
+│   └── recuperar_senha/
+│       └── password_reset_complete.html
+│       └── password_reset_confirm.html
+│       └── password_reset_done.html
+│       └── password_reset_email.html
+│       └── password_reset_form.html
+│       └── password_reset_subject.txt
 │   ├── base.html         # Template mestre com layout padrão
 │   └── login.html        # Interface de autenticação
+│   └── aceitar_convite.html
+│   └── configuracoes.html
+│   └── dashboard.html
+│   └── gerenciamento_processos.html
 │
 └── static/               # Arquivos estáticos globais
     └── css/
         └── global.css    # Variáveis globais e estilização base
+        └── configuracoes.css
+        └── dashboard.css
+        └── gerenciamento_processos.css
+        └── login.css
+        └── modais_crm.css
+        └── modal_processo.css
+        └── password_reset.css
+        └── theme.css
+    └── img/
+    └── scripts/
+        └── configuracoes.js
+        └── dashboard.js
+        └── gerenciamento_processo.js
+        └── utils.js
 
 ```
 
