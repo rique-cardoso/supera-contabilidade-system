@@ -1315,8 +1315,7 @@ function salvarEmpresa(e) {
     body: JSON.stringify(body),
   })
     .then(() => {
-      fecharModalFormEmpresa();
-      abrirModalListEmpresas(); // Atualiza a tabela de listagem
+      window.location.reload();
     })
     .catch((err) => alert(err.message));
 }
