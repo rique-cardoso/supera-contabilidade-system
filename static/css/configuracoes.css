@@ -28,7 +28,7 @@
 /* Tipografia dos Títulos (h2)
 */
 .container_alter-users h2 {
-    color: #333333;
+    color: var(--light-font2);
     font-size: 1.4rem;
     font-weight: 700;
     margin-bottom: 35px;
@@ -55,11 +55,11 @@
     width: 100%;
     max-width: 380px;
     padding: 12px 14px;
-    background-color: #dde0e6; /* Cinza preenchimento */
+    background-color: var(--background-doc); /* Cinza preenchimento */
     border: 1px solid #b8bac0; /* Borda cinza sutil */
     border-radius: 6px;
     font-size: 1rem;
-    color: #333;
+    color: var(--light-font2);
     outline: none;
     box-sizing: border-box;
     transition: border-color 0.3s ease;
@@ -67,7 +67,6 @@
 
 .input-inline:focus {
     border-color: #172d44; /* Destaque ao clicar */
-    background-color: #e6e8ec;
 }
 
 /* Botões de Ação
