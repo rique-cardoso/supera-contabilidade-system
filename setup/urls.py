@@ -64,7 +64,7 @@ urlpatterns = [
 
     # API: Processos relacionados
     path('api/processos/<int:processo_id>/relacionados/adicionar/', adicionar_processo_relacionado, name='adicionar_processo_relacionado'),
-    path('api/processos/<int:processo_id>/relacionados/<int:relacionado_id>/rmeover/', remover_processo_relacionado, name='remover_processo_relacionado'),
+    path('api/processos/<int:processo_id>/relacionados/<int:relacionado_id>/remover/', remover_processo_relacionado, name='remover_processo_relacionado'),
     
     # API: Vistorias
     path('api/processos/<int:processo_id>/vistorias/criar/', criar_vistoria, name='criar_vistoria'),
