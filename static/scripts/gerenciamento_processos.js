@@ -491,11 +491,7 @@ function popularFases(fases) {
     return;
   }
 
-  // Ordena: Específicas primeiro, gerais (documentação) depois
-  const ordenadas = [
-    ...fases.filter((f) => !f.is_geral),
-    ...fases.filter((f) => f.is_geral),
-  ];
+  const ordenadas = fases.sort((a, b) => a.id - b.id);
 
   // Renderiza cada fase diretamente como um item
   ordenadas.forEach((fase) => container.appendChild(criarItemFase(fase)));
@@ -528,7 +524,36 @@ function criarItemFase(fase) {
     abrirSubModalAnexos(fase.id, fase.nome);
   });
 
+  // Botão de anexo
+  el.querySelector(".btn-item-anexo").addEventListener("click", () => {
+    abrirSubModalAnexos(fase.id, fase.nome);
+  });
+
+  // NOVO: Adiciona evento de clique para excluir a fase
+  const btnExcluir = el.querySelector(".btn-excluir-fase");
+  if (btnExcluir) {
+    btnExcluir.addEventListener("click", () => {
+      excluirFaseProcesso(fase.id, fase.nome, el);
+    });
+  }
+
   return el;
+}
+
+function excluirFaseProcesso(faseId, faseNome, el) {
+  // Pede confirmação ao usuário antes de prosseguir
+  if (confirm(`Deseja realmente excluir a fase "${faseNome}"?\n\nEsta ação não pode ser desfeita e excluirá os anexos vinculados.`)) {
+    
+    // Dispara o DELETE para a nossa nova rota do Django
+    fetchJSON(`/api/fases/${faseId}/excluir/`, {
+      method: "DELETE",
+    })
+      .then(() => {
+        // Se a API retornar sucesso, removemos o elemento HTML da tela
+        el.remove();
+      })
+      .catch((err) => alert(`Erro ao excluir fase: ${err.message}`));
+  }
 }
 
 function toggleFaseProcesso(faseId, checkbox, el) {

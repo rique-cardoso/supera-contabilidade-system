@@ -335,6 +335,18 @@ def criar_fase_personalizada(request, processo_id): # Renomeado, agora recebe o 
         }, status=201)
     except Exception as e:
         return JsonResponse({'erro': str(e)}, status=400)
+
+@login_required
+@require_http_methods(["DELETE"])
+def excluir_fase_processo(request, fase_id):
+    """ Exclui uma fase do processo """
+    fase = get_object_or_404(FaseProcesso, id=fase_id)
+    
+    try:
+        fase.delete()
+        return JsonResponse({'mensagem': 'Fase excluída com sucesso'}, status=200)
+    except Exception as e:
+        return JsonResponse({'erro': f'Não foi possível excluir a fase: {str(e)}'}, status=400)
     
 @login_required
 @require_http_methods(["POST"])

@@ -17,6 +17,7 @@ from core.views import (
     obter_processo_completo,
     toggle_fase_processo,
     criar_fase_personalizada,
+    excluir_fase_processo,
     upload_anexo,
     criar_vistoria,
     atualizar_status_vistoria,
@@ -72,6 +73,7 @@ urlpatterns = [
 
     # API: Fases (Substituindo os antigos itens)
     path('api/processos/<int:processo_id>/fases/criar/', criar_fase_personalizada, name='criar_fase_personalizada'),
+    path('api/fases/<int:fase_id>/excluir/', excluir_fase_processo, name='excluir_fase_processo'),
     path('api/fases/<int:fase_id>/toggle/', toggle_fase_processo, name='toggle_fase_processo'),
     path('api/fases/<int:fase_id>/anexos/', upload_anexo, name='upload_anexo'),
     path('api/fases/<int:fase_id>/listar-anexos/', listar_anexos, name='listar_anexos'),

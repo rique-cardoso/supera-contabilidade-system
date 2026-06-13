@@ -535,7 +535,7 @@
 }
 
 /* Ícone de clipe para abrir os anexos do item */
-.btn-item-anexo {
+.btn-item-anexo, .btn-excluir-fase {
     background: transparent;
     border: none;
     cursor: pointer;
@@ -547,7 +547,7 @@
     flex-shrink: 0;
 }
 
-.btn-item-anexo:hover {
+.btn-item-anexo:hover, .btn-excluir-fase:hover {
     color: var(--main);
     background: var(--main-background);
 }
