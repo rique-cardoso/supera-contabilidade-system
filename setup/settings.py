@@ -155,6 +155,11 @@ LOGOUT_REDIRECT_URL = 'login'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Configuração de E-mail para Desenvolvimento (Imprime no Terminal)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'Supera Contabilidade <nao-responda@superacontabilidade.com.br>'
+# Configuração de E-mail para Desenvolvimento (Imprime no Terminal)EMAIL_BACKEND = 'django.core.mai>
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
