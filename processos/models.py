@@ -290,8 +290,7 @@ class Anexo(models.Model):
         on_delete=models.CASCADE,
         related_name='anexos'
     )
-
-    arquivo = models.FileField(upload_to='anexos/%Y/%m/')
+    arquivo_url = models.URLField(max_length=1000, blank=True)
     nome_original = models.CharField(max_length=255, blank=True)
     data_upload = models.DateTimeField(auto_now_add=True)
     tipo_arquivo = models.CharField(max_length=10, blank=True)
@@ -303,17 +302,6 @@ class Anexo(models.Model):
     
     def __str__(self):
         return f"Anexo - {self.fase.nome}"
-    
-    def save(self, *args, **kwargs):
-        if self.arquivo:
-            extensao = self.arquivo.name.split('.')[-1].lower()
-            if extensao not in self.EXTENSOES_PERMITIDAS:
-                raise ValueError(
-                    f"Formato '{extensao}' não permitido. Use: {', '.join(self.EXTENSOES_PERMITIDAS)}"
-                )
-            self.tipo_arquivo = extensao
-            self.nome_original = self.arquivo.name
-        super().save(*args, **kwargs)
     
 class Vistoria(models.Model):
     """

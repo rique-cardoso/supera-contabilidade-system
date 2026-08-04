@@ -14,6 +14,7 @@ from processos.models import Processo, FaseProcesso, Vistoria, Anexo
 from clientes.models import Empresa
 from notificacoes.models import Notificacao
 from core.models import Usuario
+from core.drive_service import upload_arquivo_estruturado
 # Create your views here.
 
 @login_required
@@ -350,22 +351,42 @@ def excluir_fase_processo(request, fase_id):
     
 @login_required
 @require_http_methods(["POST"])
-def upload_anexo(request, fase_id): # Mudou para fase_id
+def upload_anexo(request, fase_id):
     fase = get_object_or_404(FaseProcesso, id=fase_id)
     arquivo = request.FILES.get('arquivo')
 
     if not arquivo:
         return JsonResponse({'erro': 'Nenhum arquivo enviado'}, status=400)
+
+    extensao = arquivo.name.split('.')[-1].lower()
+    if extensao not in Anexo.EXTENSOES_PERMITIDAS:
+        return JsonResponse({'erro': f'Formato {extensao} não permitido.'}, status=400)
+
     try:
-        anexo = Anexo(fase=fase, arquivo=arquivo) # Atualizado aqui
+        # A Mágica da Hierarquia: Pegamos os nomes navegando pelos relacionamentos!
+        nome_cliente = fase.processo.empresa.cliente.nome_responsavel
+        nome_empresa = fase.processo.empresa.nome_empresa
+        protocolo = fase.processo.protocolo
+
+        # Chama a função que faz todo o trabalho no Google Drive
+        link_do_drive = upload_arquivo_estruturado(arquivo, nome_cliente, nome_empresa, protocolo)
+
+        # Salva no banco de dados apenas o Link
+        anexo = Anexo(
+            fase=fase, 
+            arquivo_url=link_do_drive,
+            nome_original=arquivo.name,
+            tipo_arquivo=extensao
+        )
         anexo.save()
 
         return JsonResponse({
             'id': anexo.id,
             'nome_original': anexo.nome_original,
             'tipo_arquivo': anexo.tipo_arquivo,
-            'url': request.build_absolute_uri(anexo.arquivo.url),
+            'url': anexo.arquivo_url,
         }, status=201)
+
     except Exception as e:
          return JsonResponse({'erro': str(e)}, status=400)
 
@@ -772,7 +793,7 @@ def listar_anexos(request, fase_id): # Mudou para fase_id
                 'id': a.id,
                 'nome_original': a.nome_original,
                 'tipo_arquivo': a.tipo_arquivo,
-                'url': request.build_absolute_uri(a.arquivo.url),
+                'url': a.arquivo_url,
             }
             for a in fase.anexos.all() # Atualizado
         ]

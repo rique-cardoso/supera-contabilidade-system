@@ -24,3 +24,7 @@ Thumbs.db
 
 # Anexos do sistema
 media/
+
+# API Google Drive
+credentials.json
+token.json
