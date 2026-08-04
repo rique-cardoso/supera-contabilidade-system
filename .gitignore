@@ -28,3 +28,9 @@ media/
 # API Google Drive
 credentials.json
 token.json
+
+# Arquivos de Infraestrutura (VPS)
+Dockerfile
+docker-compose.yml
+nginx.conf
+cron_alertas.log
