@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+from django.utils import timezone
+from datetime import timedelta
 from django.utils import timezone
 from processos.models import Processo, Vistoria, FaseProcesso
 from notificacoes.models import Notificacao
@@ -13,7 +14,7 @@ class MotorNotificacoesService:
         Função principal a ser rodada diariamente.
         Avalia RF25 (Alertas de Prazo) e RF26 (Alertas Críticos).
         """
-        hoje = date.today()
+        hoje = timezone.localdate()
         # Filtramos apenas processos que ainda importam
         processos_ativos = Processo.objects.exclude(status__in=['EXCLUIDO', 'CONCLUIDO'])
 
