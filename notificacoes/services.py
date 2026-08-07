@@ -1,6 +1,4 @@
 from django.utils import timezone
-from datetime import timedelta
-from django.utils import timezone
 from processos.models import Processo, Vistoria, FaseProcesso
 from notificacoes.models import Notificacao
 from django.core.mail import send_mass_mail
@@ -10,18 +8,13 @@ class MotorNotificacoesService:
     
     @staticmethod
     def processar_prazos_diarios():
-        """
-        Função principal a ser rodada diariamente.
-        Avalia RF25 (Alertas de Prazo) e RF26 (Alertas Críticos).
-        """
-        hoje = timezone.localdate()
-        # Filtramos apenas processos que ainda importam
+        hoje = timezone.localdate() # CORREÇÃO 1: Garante o horário do Brasil (settings.TIME_ZONE)
+        
         processos_ativos = Processo.objects.exclude(status__in=['EXCLUIDO', 'CONCLUIDO'])
 
         for processo in processos_ativos:
             dias_restantes = (processo.data_vencimento - hoje).days
 
-            # RF26 - Alerta Crítico (Vencido) - Notificação Diária
             if dias_restantes < 0:
                 MotorNotificacoesService._gerar_notificacao(
                     processo=processo,
@@ -29,8 +22,6 @@ class MotorNotificacoesService:
                     titulo=f"URGENTE: Processo {processo.protocolo} VENCIDO",
                     mensagem=f"O processo da empresa {processo.empresa.nome_empresa} venceu há {abs(dias_restantes)} dias. Ação imediata necessária."
                 )
-
-            # RF25 - Alerta (Prazos Padrão: 30, 20 dias, e diariamente nos últimos 10)
             elif dias_restantes <= 30:
                 if dias_restantes <= 10 or dias_restantes % 10 == 0:
                     MotorNotificacoesService._gerar_notificacao(
@@ -40,16 +31,13 @@ class MotorNotificacoesService:
                         mensagem=f"O processo {processo.protocolo} vencerá em {dias_restantes} dias ({processo.data_vencimento.strftime('%d/%m/%Y')})."
                     )
             
-            # Sub-regra RF25 - Documentos Pendentes no Checklist
-            MotorNotificacoesService._verificar_pendencias_checklist(processo, dias_restantes)
+            # CORREÇÃO 2: Só verifica documentos pendentes se o processo ainda não estiver vencido.
+            if dias_restantes >= 0:
+                MotorNotificacoesService._verificar_pendencias_checklist(processo, dias_restantes)
 
     @staticmethod
     def processar_vistorias():
-        """
-        Avalia RF27 (Agendamentos de Vistoria).
-        Pode rodar várias vezes ao dia.
-        """
-        agora = timezone.now()
+        agora = timezone.localtime() # Garante o horário local para cálculos de horas
         vistorias = Vistoria.objects.filter(status='AGENDADA')
 
         for vistoria in vistorias:
@@ -57,21 +45,15 @@ class MotorNotificacoesService:
             dias = diferenca.days
             horas = diferenca.total_seconds() // 3600
 
-            # 1 semana antes
             if dias == 7:
                 MotorNotificacoesService._gerar_notificacao(vistoria.processo, 'AGENDAMENTO', "Vistoria em 1 Semana", f"Vistoria agendada para {vistoria.data_hora.strftime('%d/%m às %H:%M')}.")
-            # 3 dias antes
             elif dias == 3:
                 MotorNotificacoesService._gerar_notificacao(vistoria.processo, 'AGENDAMENTO', "Vistoria em 3 Dias", f"Atenção: Vistoria se aproximando no local {vistoria.local}.")
-            # No momento (janela de 1 hora antes)
             elif 0 <= horas <= 1:
                 MotorNotificacoesService._gerar_notificacao(vistoria.processo, 'AGENDAMENTO', "Vistoria Iniciando", f"A vistoria do processo {vistoria.processo.protocolo} iniciará em instantes.")
 
     @staticmethod
     def gerar_alerta_atencao(processo, acao_pendente):
-        """
-        RF28 - Disparado pontualmente por ações de usuários na Interface.
-        """
         MotorNotificacoesService._gerar_notificacao(
             processo=processo,
             categoria='ATENÇÃO',
@@ -79,11 +61,8 @@ class MotorNotificacoesService:
             mensagem=f"O processo {processo.protocolo} está pendente da seguinte ação: {acao_pendente}."
         )
 
-    # --- MÉTODOS INTERNOS ---
-
     @staticmethod
     def _verificar_pendencias_checklist(processo, dias_restantes_processo):
-        """ Verifica se há fases/documentos faltando quando o prazo aperta """
         fases_pendentes = FaseProcesso.objects.filter(processo=processo, is_concluido=False)
         if fases_pendentes.exists() and dias_restantes_processo <= 30:
             if dias_restantes_processo <= 10 or dias_restantes_processo % 10 == 0:
@@ -97,13 +76,8 @@ class MotorNotificacoesService:
 
     @staticmethod
     def _gerar_notificacao(processo, categoria, titulo, mensagem):
-        """ 
-        Garante a idempotência (não cria duas notificações iguais no mesmo dia) 
-        e vincula os destinatários corretamente (RF24).
-        """
-        hoje = timezone.now().date()
+        hoje = timezone.localdate() # CORREÇÃO 3: Usar localdate para bater perfeitamente com a data do BD
         
-        # Evita duplicação diária
         existe = Notificacao.objects.filter(
             processo=processo,
             titulo=titulo,
@@ -118,7 +92,6 @@ class MotorNotificacoesService:
                 mensagem=mensagem
             )
             
-            # RF24: Destinatários são APENAS os responsáveis pelo processo
             responsaveis = processo.responsaveis.all()
             if responsaveis.exists():
                 notificacao.usuarios_destinatarios.set(responsaveis)
@@ -126,7 +99,6 @@ class MotorNotificacoesService:
 
     @staticmethod
     def _disparar_emails(notificacoes):
-        """ Despacha os e-mails e marca is_enviada_email = True """
         mensagens_email = []
         notificacoes_enviadas = []
 
@@ -145,7 +117,6 @@ class MotorNotificacoesService:
         if mensagens_email:
             try:
                 send_mass_mail(tuple(mensagens_email), fail_silently=False)
-                # Atualiza o banco após envio bem sucedido
                 agora = timezone.now()
                 for notif in notificacoes_enviadas:
                     notif.is_enviada_email = True
