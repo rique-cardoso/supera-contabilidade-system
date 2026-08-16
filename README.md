@@ -1,189 +1,130 @@
-# 🚀 Projeto Supera - Sistema de Gestão Contábil
+# 🚀 Supera Contabilidade System
 
-O **Supera** é um Sistema de Informação Gerencial (SIG) web desenvolvido sob medida para Assessorias Contábeis. Seu objetivo principal é atuar como um orquestrador centralizado do ciclo de vida de trâmites burocráticos governamentais (Prefeituras, Corpo de Bombeiros, Vigilância Sanitária), automatizando o monitoramento de prazos, controle de vistorias e a gestão hierárquica de checklists documentais.
+![Status](https://img.shields.io/badge/Status-Em_homologação-blue)
+![Licença](https://img.shields.io/badge/Licença-MIT-green)
+![Versão](https://img.shields.io/badge/Versão-1.0.0-orange)
 
-A plataforma substitui o controle manual em planilhas por um ecossistema inteligente, com foco em segurança, auditoria e facilidade de uso diário.
-
-## 🛠️ Tecnologias Utilizadas
-
-* **Backend:** Python, Django
-* **Banco de Dados:** SQLite (Desenvolvimento) / PostgreSQL (Produção - futuro)
-* **Frontend:** HTML5, CSS3 (Arquitetura de CSS Global)
-* **Autenticação e Segurança:** Custom User Model do Django com controle de papéis (Admin e Padrão)
-* **Gerenciamento de Configurações:** `python-decouple` para variáveis de ambiente
+> Sistema automatizado de gestão de processos, controle de alvarás, disparo de notificações e organização documental em nuvem para escritórios de contabilidade.
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📖 Sobre
+O gerenciamento de prazos, renovações de alvarás (Prefeitura, Corpo de Bombeiros, etc.) e o controle rigoroso de checklists documentais são os maiores desafios operacionais de um escritório de contabilidade. A perda de um prazo pode resultar em multas severas ou na interdição das atividades de um cliente. O **Supera** foi idealizado para resolver este problema, atuando como um motor inteligente que retira o peso do acompanhamento manual das costas dos colaboradores, automatizando os alertas e estruturando a guarda de arquivos.
 
-A arquitetura do projeto foi pensada para ser limpa e escalável, utilizando diretórios globais para templates e arquivos estáticos:
-
-```text
-supera/
-│
-├── manage.py             # Script de gerenciamento do Django
-├── requirements.txt      # Lista de dependências do projeto
-├── .env.example          # Exemplo de variáveis de ambiente
-├── db.sqlite3            # Banco de dados local (gerado após as migrações)
-│
-├── setup/                # Configurações globais do projeto (settings, urls)
-├── core/                 # App principal (models, views, lógica de negócio)
-├── clientes/
-├── notificacoes/
-├── processos/            
-│
-├── templates/            # Templates HTML globais
-│   └── partials/
-│       └── card_processo.html
-│       └── modais_crm.html
-│       └── modal_processo.html
-│   └── recuperar_senha/
-│       └── password_reset_complete.html
-│       └── password_reset_confirm.html
-│       └── password_reset_done.html
-│       └── password_reset_email.html
-│       └── password_reset_form.html
-│       └── password_reset_subject.txt
-│   ├── base.html         # Template mestre com layout padrão
-│   └── login.html        # Interface de autenticação
-│   └── aceitar_convite.html
-│   └── configuracoes.html
-│   └── dashboard.html
-│   └── gerenciamento_processos.html
-│
-└── static/               # Arquivos estáticos globais
-    └── css/
-        └── global.css    # Variáveis globais e estilização base
-        └── configuracoes.css
-        └── dashboard.css
-        └── gerenciamento_processos.css
-        └── login.css
-        └── modais_crm.css
-        └── modal_processo.css
-        └── password_reset.css
-        └── theme.css
-    └── img/
-    └── scripts/
-        └── configuracoes.js
-        └── dashboard.js
-        └── gerenciamento_processo.js
-        └── utils.js
-
-```
+Direcionado para equipes contábeis e de legalização, o sistema não apenas gerencia as fases de cada processo, mas também conta com um Motor de Notificações autônomo (via *Cronjob*) que cobra e avisa os responsáveis sobre vistorias e vencimentos críticos por e-mail. Além disso, o software possui integração nativa com o Google Drive (OAuth2), que intercepta os uploads de arquivos e os organiza automaticamente na nuvem em uma hierarquia estrita de pastas (`Cliente > Empresa > Protocolo`), garantindo segurança e organização impecáveis.
 
 ---
 
-## ⚙️ Como Configurar e Rodar o Projeto Localmente
-
-Siga o passo a passo abaixo para configurar o ambiente e rodar a aplicação em sua máquina:
-
-### 1. Pré-requisitos
-
-Certifique-se de ter o [Python](https://www.python.org/downloads/) e o [Git](https://git-scm.com/) instalados no seu sistema.
-
-### 2. Clonar o Repositório
-
-Abra o terminal e clone o projeto para sua máquina local:
-
-```bash
-git clone <URL_DO_SEU_REPOSITORIO>
-cd supera
-
-```
-
-### 3. Criar e Ativar o Ambiente Virtual
-
-O ambiente virtual isola as dependências do projeto para não haver conflito com outras aplicações.
-
-```bash
-# Criar o ambiente virtual na pasta do projeto
-python -m venv venv
-
-# Ativar o ambiente virtual no Windows
-.\venv\Scripts\activate
-
-# Ativar o ambiente virtual no Linux/Mac
-source venv/bin/activate
-
-```
-
-### 4. Instalar as Dependências
-
-Com o ambiente ativado (você verá `(venv)` no terminal), instale todas as bibliotecas necessárias de uma só vez lendo o arquivo `requirements.txt`:
-
-```bash
-pip install -r requirements.txt
-
-```
-
-### 5. Configurar as Variáveis de Ambiente (.env)
-
-Por segurança, senhas e chaves não ficam no código-fonte. O projeto utiliza o `python-decouple` para ler essas informações de um arquivo `.env` local.
-
-1. Crie uma cópia do arquivo de exemplo:
-* No Windows: `copy .env.example .env`
-* No Linux/Mac: `cp .env.example .env`
-
-
-2. Gere uma `SECRET_KEY` segura para o Django. Você pode gerar uma rapidamente rodando este comando no terminal:
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(50))"
-
-```
-
-
-3. Abra o arquivo `.env` recém-criado e cole a chave gerada. O arquivo deve ficar assim:
-```env
-SECRET_KEY=cole-a-chave-gerada-aqui
-DEBUG=True
-ALLOWED_HOSTS=127.0.0.1,localhost
-
-```
-
-
-
-### 6. Configurar o Banco de Dados
-
-Com as variáveis de ambiente prontas, gere as tabelas base do sistema no SQLite, incluindo o modelo de usuário customizado criado para a auditoria do sistema:
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
-
-```
-
-### 7. Criar o Usuário Administrador
-
-Para acessar o sistema e gerenciar outros usuários, crie o superusuário inicial. Como a regra de negócio exige a imutabilidade do `username` para fins de auditoria, preencha os dados com atenção:
-
-```bash
-python manage.py createsuperuser
-
-```
-
-O sistema solicitará a criação de um *username*, *e-mail* e *senha*. Este usuário receberá automaticamente o papel de **Administrador**.
-
-### 8. Executar o Servidor de Desenvolvimento
-
-Inicie a aplicação localmente:
-
-```bash
-python manage.py runserver
-
-```
-
-### 9. Acessar o Sistema
-
-Abra o seu navegador e acesse:
-
-* **Tela de Login:** `http://127.0.0.1:8000/login/`
-* **Painel Administrativo do Django:** `http://127.0.0.1:8000/admin/`
+## 🚧 Status do Projeto
+- [x] Planejamento
+- [x] Documentação
+- [x] Desenvolvimento
+- [x] Testes
+- [x] Avaliação
+- [x] Deploy
+- [x] **Homologação** (Fase atual)
 
 ---
 
-## 🔐 Regras de Autenticação e Perfis
+## 👁️ Demonstração
+Você pode acessar a aplicação em produção aqui: [Link para o Deploy](http://179.197.74.224/login/)
 
-O sistema Supera opera com um modelo de usuário customizado (`core.Usuario`), dividido em dois papéis (`roles`):
+<img width="1680" height="720" alt="Video-Project-4" src="https://github.com/user-attachments/assets/2becb95f-c185-4f42-b632-8ec1fdd68ff2" />
 
-* **Administrador:** Acesso total. Capacidade de criar, gerenciar e atribuir papéis a novos usuários, além de visualizar os logs de auditoria do sistema.
-* **Usuário Padrão:** Acesso operacional. Permissão para visualizar, editar e interagir com processos, checklists e alertas, sem acesso à gestão da equipe.
+---
+
+## ✨ Funcionalidades
+- **Gestão Completa de Processos:** Criação, edição e acompanhamento de processos atrelados a empresas e órgãos específicos, com cálculo automático de datas de vencimento.
+- **Organizador Inteligente (Google Drive):** Upload de anexos integrado à API do Google Drive via OAuth2. O sistema cria pastas dinamicamente seguindo o padrão de hierarquia da contabilidade e salva apenas a URL no banco de dados.
+- **Motor de Notificações Autônomo:** Varredura automática em segundo plano que identifica prazos estourando (30, 20, 10 dias e vencidos) ou vistorias agendadas.
+- **Disparo Automático de E-mails:** Alertas enviados proativamente para os e-mails dos usuários responsáveis por cada processo específico.
+- **Controle de Checklist e Fases:** Fases geradas automaticamente baseadas no tipo de órgão (Prefeitura vs. Bombeiros) para controle exato da documentação pendente.
+- **Dashboard e Rastreabilidade:** Visualização Kanban de status (Ativo, Vencendo, Vencido) e registro de logs de ações necessárias.
+
+---
+
+## 🛠 Tecnologias Utilizadas
+As seguintes ferramentas foram usadas na construção do projeto:
+
+**Back-end:**
+- Python 3.12
+- Django
+- Google API Python Client (OAuth2)
+
+**Banco de Dados:**
+- PostgreSQL (Produção)
+- SQLite (Desenvolvimento local)
+
+**Infraestrutura e Deploy:**
+- Docker e Docker Compose
+- Nginx (Proxy reverso configurado para uploads até 50MB)
+- Gunicorn
+- Linux VPS (Ubuntu) com Cronjobs ativados
+
+---
+
+## ⚙️ Pré-requisitos
+Para rodar este projeto localmente ou em produção, você precisará ter instalado:
+
+- Python 3.12+
+- Git
+- Arquivo `credentials.json` gerado no Google Cloud Console (para acesso à API do Drive).
+
+---
+
+## 🚀 Como Rodar o Projeto
+
+### Ambiente de Desenvolvimento (Local)
+
+**1. Clone o repositório**
+```
+git clone https://github.com/rique-cardoso/supera-contabilidade-system.git 
+cd supera-contabilidade-system
+```
+**2. Crie e ative o ambiente virtual:**
+```
+python -m venv venv 
+source venv/bin/activate  # No Windows use: venv\Scripts\activate
+```
+**3. Instale as dependências:**
+`pip install -r requirements.txt`
+
+**4. Configuração das Variáveis de Ambiente:**
+- Crie um arquivo `.env` na raiz do projeto.
+- Adicione as variáveis necessárias (ex: `SECRET_KEY`, `DEBUG=True`, `GDRIVE_ROOT_FOLDER_ID`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`).
+
+**5. Gere o Token do Google Drive:**
+- Coloque o arquivo `credentials.json` na raiz do projeto.
+- Rode o script de autorização e siga as instruções no navegador: `python gerar_token.py`
+
+**6. Execute as migrações do banco de dados (SQLite):** `python manage.py migrate`
+
+**7. Inicie o servidor:** `python manage.py runserver`
+
+### Ambiente de Produção (Docker/VPS)
+1. **Preparação:** Garanta que os arquivos `.env`, `credentials.json` e `token.json` estejam configurados na raiz do projeto no servidor.
+2. **Construa e levante os containers:** `docker compose up -d --build web`
+3. **Execute as migrações no banco PostgreSQL:** `docker exec -it supera_web python manage.py migrate`
+4. **Configuração do Cronjob (Notificações automáticas):** Adicione o Cronjob no servidor local (crontab -e): `* * * * * docker exec supera_web python manage.py processar_alertas >> /caminho/absoluto/cron_alertas.log 2>&1`
+
+---
+
+## 🔌 Documentação da API
+O sistema opera majoritariamente renderizando templates pelo backend, mas possui endpoints REST para lidar com interações assíncronas no frontend:
+
+`PATCH /api/fases/<id>/marcar-lida/`
+
+- **Descrição:** Marca uma notificação específica como lida no dashboard do usuário.
+- **Regra de Segurança:** Apenas o destinatário vinculado à notificação ou um usuário "admin" tem permissão (HTTP 403 para acessos indevidos).
+
+`POST /api/fases/<id>/anexos/`
+
+- **Descrição:** Recebe o FormData com o documento, interage com o Google Drive para criar a árvore de pastas e salvar o arquivo, retornando a URL gerada no banco.
+
+---
+
+## 📫 Contato
+
+**Henrique Prates Cardoso**
+
+[LinkedIn](https://www.linkedin.com/in/henrique-cardoso-b365b1291/) | [GitHub](https://github.com/rique-cardoso) | [E-mail](mailto:henrique.prates.br@gmail.com)
