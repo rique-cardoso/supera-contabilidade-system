@@ -198,6 +198,7 @@ function abrirModalCriacao() {
   resetarChips();
 
   document.getElementById("modalProcessoOverlay").style.display = "flex";
+  document.getElementById("grupoDataVencimento").style.display = "none";
 }
 
 function editarProcesso(processoId) {
@@ -218,6 +219,8 @@ function editarProcesso(processoId) {
       alert(`Não foi possível carregar o processo: ${err.message}`);
       fecharModalProcesso();
     });
+  
+  document.getElementById("grupoDataVencimento").style.display = "block";
 }
 
 function popularModalEdicao(data) {
