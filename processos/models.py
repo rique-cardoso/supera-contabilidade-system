@@ -20,6 +20,8 @@ class Processo(models.Model):
         ('CONSTRUCAO', 'Construção'),
         ('SANITARIO', 'Sanitário'),
         ('AMBIENTAL', 'Licença Ambiental'),
+        ('TRIBUTARIA', 'Tributária'),
+        ('OUTRAS', 'Outras'),
     )
 
     STATUS_CHOICES = (
