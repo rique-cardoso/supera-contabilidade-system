@@ -29,6 +29,15 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
 
+# Informa ao Django que este domínio HTTPS tem permissão para enviar formulários (POST)
+CSRF_TRUSTED_ORIGINS = [
+    'https://superamaiscontabilidade.com.br',
+    'https://www.superamaiscontabilidade.com.br',
+]
+
+# Informa ao Django que ele está atrás de um proxy (Nginx) que já garantiu a segurança SSL
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
