@@ -5,7 +5,7 @@ from core.forms import CustomLoginForm
 from django.conf import settings
 from django.conf.urls.static import static
 from clientes.views import listar_clientes, listar_empresas, salvar_cliente, salvar_empresa
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 from core.views import (
     gerenciamento_processos,
     criar_processo,
@@ -38,6 +38,9 @@ from core.views import (
 urlpatterns = [
     # Rota admin
     path('admin/', admin.site.urls),
+
+    # Redirecionamento
+    path('', RedirectView.as_view(url='/login/', permanent=False)),
 
     # Rota raiz (home)
     path("dashboard/", dashboard, name="dashboard"),
