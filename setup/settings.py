@@ -27,6 +27,9 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
+# Ambiente de execução: STAGING (homologação) ou PRODUCTION
+ENVIRONMENT = config('ENVIRONMENT', default='PRODUCTION').strip().upper()
+
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
 
 # Informa ao Django que este domínio HTTPS tem permissão para enviar formulários (POST)
@@ -76,6 +79,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.ambiente',
             ],
         },
     },

@@ -17,6 +17,9 @@
 </head>
 
 <body>
+    {% if IS_STAGING %}
+    <div class="aviso-homologacao"><i class="fa-solid fa-flask"></i> AMBIENTE DE HOMOLOGAÇÃO</div>
+    {% endif %}
     <header>
         <div><img src="{% static 'img/logo-login.png' %}" alt="Logo Supera Contabilidade"></div>
         <div>

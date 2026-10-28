@@ -16,6 +16,9 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body style="padding: 20px">
+    {% if IS_STAGING %}
+    <div class="aviso-homologacao"><i class="fa-solid fa-flask"></i> AMBIENTE DE HOMOLOGAÇÃO</div>
+    {% endif %}
     <header class="cabecalho_principal">
         <div class="container_logo"><img src="{% static 'img/logo-header.png' %}" alt="Logo Supera Contabilidade"></div>
         <div class="theme-toggle-container">

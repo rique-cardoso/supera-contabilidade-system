@@ -163,3 +163,20 @@ header.cabecalho_principal p{
   color: var(--contour-form);
   font-size: 0.8em;
 }
+/* Aviso de ambiente de homologação */
+div.aviso-homologacao{
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 6px 20px;
+  background-color: #C23134;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+  pointer-events: none;
+}
